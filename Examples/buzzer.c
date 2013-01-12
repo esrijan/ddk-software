@@ -16,43 +16,23 @@
 #include <avr/io.h>
 #include <util/delay.h>
 
+//#define MANUAL
+#define HUMAN_AUDIBLE_MAX_FREQ 20000
+
 /*
- * Human audible frequency range is 20Hz to 20KHz. So, setting to generate
- * roughly upto 20KHz, which means a minimum of 20KHz / 256 ~ 80Hz
+ * The following has been decided based on the possible_freq.txt and by
+ * actually hearing the audio
  */
-#if (F_CPU < 20000)
-#error Proecessor frequency should be between 20 KHz & 200 MHz
-#elif (F_CPU < 160000)
-#define PRESCALAR (0b001 << CS20) // Prescaler is /1
-#define MAX_FREQ F_CPU
-#elif (F_CPU < 640000)
-#define PRESCALAR (0b010 << CS20) // Prescaler is /8
-#define MAX_FREQ (F_CPU / 8)
-#elif (F_CPU < 1280000)
-#define PRESCALAR (0b011 << CS20) // Prescaler is /32
-#define MAX_FREQ (F_CPU / 32)
-#elif (F_CPU < 2560000)
-#define PRESCALAR (0b100 << CS20) // Prescaler is /64
-#define MAX_FREQ (F_CPU / 64)
-#elif (F_CPU < 5120000)
-#define PRESCALAR (0b101 << CS20) // Prescaler is /128
-#define MAX_FREQ (F_CPU / 128)
-#elif (F_CPU < 20480000)
-#define PRESCALAR (0b110 << CS20) // Prescaler is /256
-#define MAX_FREQ (F_CPU / 256)
-#elif (F_CPU <= 200000000) // Max f which could generate a min. of ~800Hz
-#define PRESCALAR (0b111 << CS20) // Prescaler is /1024
-#define MAX_FREQ (F_CPU / 1024)
-#else
-#error Proecessor frequency should be between 20 KHz & 200 MHz
-#endif
+#define PRESCALER (6 << CS20)
+#define MAX_FREQ ((F_CPU / 256) / 2)
 
 void init_io(void)
 {
 	// 1 = output, 0 = input
 	DDRB &= ~(1 << PB2); // Set PB2 as input
 }
-void set_frequency(unsigned freq)
+void set_frequency(unsigned long freq)
+/* f = MAX_FREQ / (1 + OCR2), i.e. OCR2 = MAX_FREQ / f - 1; */
 {
 	if (freq < (MAX_FREQ / 256))
 	{
@@ -62,10 +42,12 @@ void set_frequency(unsigned freq)
 	{
 		freq = MAX_FREQ;
 	}
-	OCR2 = MAX_FREQ / freq;
+	OCR2 = MAX_FREQ / freq - 1;
 }
-void init_timer(unsigned freq)
+void init_timer(unsigned long freq)
 {
+	DDRD |= (1 << PD7); // OC2 is PD7
+
 	set_frequency(freq);
 
 	/*
@@ -74,27 +56,32 @@ void init_timer(unsigned freq)
 	 * Toggling on Match to generate square wave for a particular frequency.
 	 * Output would come on OC2/PD7 (Pin 21).
 	 */
-	TCCR2 = (1 << WGM21) | (0 << WGM20) | (0b01 < COM20) | PRESCALAR;
-
-	DDRD |= (1 << PD7); // OC2 is PD7
+	TCCR2 = (1 << WGM21) | (0 << WGM20) | (1 << COM20) | PRESCALER;
 }
 
 int main(void)
 {
+#ifdef MANUAL
 	int can_change_state = 1;
-	unsigned freq = MAX_FREQ / 256;
+#endif
+	unsigned long freq = MAX_FREQ / 256;
 
 	init_io();
 	init_timer(freq);
 
 	while (1)
 	{
+#ifdef MANUAL
 		if (can_change_state && (PINB & (1 << PB2)))
 		{
 			_delay_ms(20);
-			if (PINB & (1 << 2)) // debouncing check
+			if (PINB & (1 << PB2)) // debouncing check
 			{
-				freq++;
+				freq += (MAX_FREQ / 256);
+				if (freq > HUMAN_AUDIBLE_MAX_FREQ)
+				{
+					freq = MAX_FREQ / 256;
+				}
 				set_frequency(freq);
 				can_change_state = 0;
 			}
@@ -102,11 +89,20 @@ int main(void)
 		else
 		{
 			_delay_ms(20);
-			if (!(PINB & (1 << 2))) // debouncing check
+			if (!(PINB & (1 << PB2))) // debouncing check
 			{
 				can_change_state = 1;
 			}
 		}
+#else
+		_delay_ms(100);
+		freq += (MAX_FREQ / 256);
+		if (freq > HUMAN_AUDIBLE_MAX_FREQ)
+		{
+			freq = MAX_FREQ / 256;
+		}
+		set_frequency(freq);
+#endif
 	}
 
 	return 0;

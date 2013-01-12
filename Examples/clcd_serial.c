@@ -9,7 +9,6 @@
  */
 
 #include <avr/io.h>
-#include <util/delay.h>
 
 #include "clcd.h"
 #include "serial.h"
