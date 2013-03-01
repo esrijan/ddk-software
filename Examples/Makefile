@@ -6,6 +6,8 @@
 # Licensed under: JSL (See LICENSE file for details)
 #
 
+BOOTLOADHID_BASE := ..
+
 USE_CLCD := 1
 ifdef USE_CLCD
 	CLCD_SRC := clcd.c

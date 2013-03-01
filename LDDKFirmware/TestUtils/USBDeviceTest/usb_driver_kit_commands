@@ -1,0 +1,65 @@
+#!/bin/bash
+#
+# Copyright (C) eSrijan Innovations Private Limited
+#
+# Author: Anil Kumar Pugalia <anil_pugalia@eSrijan.com>
+#
+# Licensed under: JSL (See LICENSE file for details)
+#
+SUDO=sudo
+USBTOOL_PATH=./
+IDENTIFIER="-v 0x16c0 -p 0x05dc"
+echo -n "Our Device: "
+${SUDO} ${USBTOOL_PATH}usbtool ${IDENTIFIER} list
+echo -n "LED Status: "
+status=`${SUDO} ${USBTOOL_PATH}usbtool ${IDENTIFIER} control in vendor device 2 0 0`
+if [ ${status} = 0x00 ]
+then
+	echo "Off"
+else
+	echo "On"
+fi
+sleep 5
+echo -n "Switching On LED ... "
+${SUDO} ${USBTOOL_PATH}usbtool ${IDENTIFIER} control out vendor device 1 1 0 > /dev/null
+echo "done"
+sleep 5
+echo -n "Switching Off LED ... "
+${SUDO} ${USBTOOL_PATH}usbtool ${IDENTIFIER} control out vendor device 1 0 0 > /dev/null
+echo "done"
+sleep 5
+echo -n "Reading data ... "
+${SUDO} ${USBTOOL_PATH}usbtool ${IDENTIFIER} -e 0x81 interrupt in -O input
+echo "done. Read:"
+cat input
+sleep 5
+echo -n "Writing EEPROM data ... "
+${SUDO} ${USBTOOL_PATH}usbtool ${IDENTIFIER} -e 0x01 interrupt out -D data > /dev/null
+echo -n "done. Wrote: "
+cat data
+echo
+echo "Check your serial console. Then, press the switch for 10 secs."
+sleep 10
+#echo -n "Reading data ... "
+${SUDO} ${USBTOOL_PATH}usbtool ${IDENTIFIER} -e 0x81 interrupt in -O input
+#echo "done. Read:"
+#cat input
+echo -n "Reading EEPROM data ... "
+${SUDO} ${USBTOOL_PATH}usbtool ${IDENTIFIER} -e 0x81 interrupt in -O input
+echo "done. Read:"
+cat input
+echo "Now, leave the switch and Type some characters on serial console."
+sleep 15
+echo -n "Reading serial data ... "
+${SUDO} ${USBTOOL_PATH}usbtool ${IDENTIFIER} -e 0x82 interrupt in -O input
+echo -n "done. Read: "
+cat input
+echo
+rm -f input
+sleep 5
+echo -n "Writing serial data ... "
+${SUDO} ${USBTOOL_PATH}usbtool ${IDENTIFIER} -e 0x02 interrupt out -D data > /dev/null
+echo -n "done. Wrote: "
+cat data
+echo
+echo "Check your serial console."
