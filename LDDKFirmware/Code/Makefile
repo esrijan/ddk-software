@@ -8,7 +8,7 @@
 
 DDKSW_BASE := ../..
 
-FW_VER := 1.2
+FW_VER := 1.3
 #USE_CLCD := 1
 #USE_FLASH := 1
 CSRCS := $(wildcard *.c)

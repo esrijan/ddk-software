@@ -48,9 +48,16 @@ then
 	then
 		exit
 	fi
+	echo "Before that reconnect the serial cable (on both sides) and start minicom."
+	echo "Check for DDK ver display on BL jumper change to RX."
+	echo "Now, press any key to continue."
+	read
+	device=`${USBTOOL} list`
 	while [ "${device}" = "" ]
 	do
-		echo "Change BL jumper to RX and press any key to continue"
+		echo "Reconnect the serial cable (on both sides) and start minicom."
+		echo "Then, change BL jumper to RX. Check for DDK ver display."
+		echo "Now, press any key to continue."
 		read
 		device=`${USBTOOL} list`
 	done
@@ -77,5 +84,6 @@ do
 	${USBTOOL} -e 0x82 interrupt in
 	sleep 1
 done
-echo "Now test the B0-B7 by grounding the resistors or by re-powering the board"
-echo "And finally set the RX jumper towards B7"
+echo "Now quit minicom & test the B0-B7 by grounding the resistors or by re-powering the board."
+echo "Then power off the board and set the RX jumper towards B7."
+echo "And finally, re-power and check for green led glowing."

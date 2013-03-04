@@ -1,7 +1,7 @@
 /* Name: main.c
  * Project: custom-class, a basic USB example
  * Author: Christian Starkjohann
- * Modified by: Anil Kumar Pugalia
+ * Modified by: Anil Kumar Pugalia <anil_pugalia@eSrijan.com>
  * Creation Date: 2008-04-09
  * Tabsize: 4
  * Copyright: (c) 2008 by OBJECTIVE DEVELOPMENT Software GmbH
@@ -10,7 +10,7 @@
  */
 
 /*
- * Tested with ATmega32
+ * Tested with ATmega16/32
  * Fuse settings: H: 0x89; L: 0xFF
  */
 
@@ -199,6 +199,11 @@ usbMsgLen_t usbFunctionSetup(uchar data[8])
 USB_PUBLIC void usbFunctionWriteOut(uchar *data, uchar len)
 {
     uchar mem_i;
+    union
+	{
+		uint16_t word;
+		uint8_t bytes[2];
+	} align;
 
     switch (usbRxToken)
     {
@@ -207,11 +212,36 @@ USB_PUBLIC void usbFunctionWriteOut(uchar *data, uchar len)
             {
                 len = MEM_SIZE - mem_wr_off;
             }
-            len &= ~0x01; // Keep length even
-            for (mem_i = 0; mem_i < len; mem_i += 2)
+			if (len == 0)
+			{
+				break;
+			}
+			if (mem_wr_off & 0x01) // is odd, i.e. non-word aligned -> write one byte
+            // Need to do a read-modify-write for the odd part
+			{
+                align.word = mem_read_word((uint16_t *)(MEM_START + mem_wr_off - 1));
+                align.bytes[1] = data[0];
+                mem_write_word((uint16_t *)(MEM_START + mem_wr_off - 1), align.word);
+				data++;
+				len--;
+				mem_wr_off++;
+			}
+			if (len == 0)
+			{
+				break;
+			}
+            // Copying the words from an aligned mem_wr_off
+            for (mem_i = 0; mem_i < (len & ~0x01); mem_i += 2)
             {
                 mem_write_word((uint16_t *)(MEM_START + mem_wr_off + mem_i),
                                 *(uint16_t *)(data + mem_i));
+            }
+			if (len & 0x01) // is odd, i.e. non-word aligned -> write last byte
+            // Need to do a read-modify-write for the odd part
+            {
+                align.word = mem_read_word((uint16_t *)(MEM_START + mem_wr_off + mem_i));
+                align.bytes[0] = data[len - 1];
+                mem_write_word((uint16_t *)(MEM_START + mem_wr_off + mem_i), align.word);
             }
             mem_wr_off += len;
             printlnd("Memory written");
