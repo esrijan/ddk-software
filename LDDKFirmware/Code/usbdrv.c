@@ -577,6 +577,8 @@ uchar           isReset = !notResetState;
         USB_RESET_HOOK(isReset);
         wasReset = isReset;
     }
+#else
+	(void)(notResetState); // Not used
 #endif
 }
 

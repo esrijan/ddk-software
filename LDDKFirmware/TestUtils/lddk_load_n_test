@@ -8,14 +8,14 @@
 #
 
 SUDO=sudo
-FIRMWARE_BASE=../Code
-USBTOOL_BASE="USBDeviceTest"
+FIRMWARE_BASE=${PWD}/`dirname $0`/../Code
+USBTOOL_BASE=${PWD}/`dirname $0`/USBDeviceTest
 IDENTIFIER="-v 0x16c0 -p 0x05dc"
 USBTOOL="${SUDO} ${USBTOOL_BASE}/usbtool ${IDENTIFIER}"
 
 led_status()
 {
-	status=`${USBTOOL} control in vendor device 2 0 0 &> /dev/null`
+	status=`${USBTOOL} control in vendor device 2 0 0 2> /dev/null`
 	if [ "${status}" = "" ]
 	then
 		echo "LDDK not detected"
@@ -32,28 +32,22 @@ led_set()
 {
 	if [ "$1" = "off" ]
 	then
-		echo -n "Switching Off LED ... "
-		if (${USBTOOL} control out vendor device 1 0 0 > /dev/null)
-		then
-			echo "failed"
-		else
-			echo "done"
-		fi
+		echo "Switching Off LED ... "
+		${USBTOOL} control out vendor device 1 0 0 > /dev/null
 	else
-		echo -n "Switching On LED ... "
-		if (${USBTOOL} control out vendor device 1 1 0 > /dev/null)
-		then
-			echo "failed"
-		else
-			echo "done"
-		fi
+		echo "Switching On LED ... "
+		${USBTOOL} control out vendor device 1 1 0 > /dev/null
 	fi
 }
 
 if [ "$1" = "-l" ]
 then
 	make -C ${FIRMWARE_BASE} package
-	${FIRMWARE_BASE}/upgrade_firmware
+	${SUDO} ${FIRMWARE_BASE}/upgrade_firmware
+	if [ $? -ne 0 ]
+	then
+		exit
+	fi
 	while [ "${device}" = "" ]
 	do
 		echo "Change BL jumper to RX and press any key to continue"
@@ -64,13 +58,13 @@ then
 fi
 led_status
 sleep 1
-led_set on
-led_status
-sleep 1
 led_set off
 led_status
 sleep 1
 led_set on
+led_status
+sleep 1
+led_set off
 echo -n "Writing serial data ... "
 ${USBTOOL} -e 0x02 interrupt out -D ${USBTOOL_BASE}/data > /dev/null
 echo -n "done. Check your serial console for '"

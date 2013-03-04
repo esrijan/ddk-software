@@ -6,7 +6,7 @@
 # Licensed under: JSL (See LICENSE file for details)
 #
 
-BOOTLOADHID_BASE := ..
+DDKSW_BASE := ..
 
 USE_CLCD := 1
 ifdef USE_CLCD
@@ -56,7 +56,7 @@ CHIP_NO := 16
 #F_CPU := 8000000
 F_CPU := 16000000
 #F_CPU := 20000000
-include rules.mk
+include ${DDKSW_BASE}/rules.mk
 ifdef USE_CLCD
 CFLAGS += -DUSE_CLCD
 endif

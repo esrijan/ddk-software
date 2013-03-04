@@ -15,7 +15,7 @@
 #include <avr/interrupt.h>
 #include <avr/boot.h>
 
-#include "flash_ops.h"
+#include "flash.h"
 
 uint16_t flash_read_word(uint16_t *addr)
 {

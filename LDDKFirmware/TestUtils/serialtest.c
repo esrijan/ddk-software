@@ -198,11 +198,13 @@ int main(int argc, char **argv)
 					{
 						break;
 					}
+					usleep(10000);
 					flags &= ~TIOCM_DTR;
 					if (ioctl(fd, TIOCMSET, &flags) == -1)
 					{
 						break;
 					}
+					usleep(10000);
 				}
 				if (i < 8)
 				{
@@ -222,11 +224,13 @@ int main(int argc, char **argv)
 					{
 						break;
 					}
+					usleep(10000);
 					flags &= ~TIOCM_DTR;
 					if (ioctl(fd, TIOCMSET, &flags) == -1)
 					{
 						break;
 					}
+					usleep(10000);
 				}
 				if (i < 8)
 				{
@@ -245,11 +249,13 @@ int main(int argc, char **argv)
 					{
 						break;
 					}
+					usleep(10000);
 					flags &= ~TIOCM_DTR;
 					if (ioctl(fd, TIOCMSET, &flags) == -1)
 					{
 						break;
 					}
+					usleep(10000);
 				}
 				if (i < 8)
 				{
@@ -267,11 +273,13 @@ int main(int argc, char **argv)
 					{
 						break;
 					}
+					usleep(10000);
 					flags &= ~TIOCM_DTR;
 					if (ioctl(fd, TIOCMSET, &flags) == -1)
 					{
 						break;
 					}
+					usleep(10000);
 					sleep(1);
 				}
 				if (i < 10)

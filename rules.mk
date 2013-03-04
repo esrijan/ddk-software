@@ -21,7 +21,7 @@ OBJCOPY := ${CROSS_COMPILE}objcopy
 OBJDUMP := ${CROSS_COMPILE}objdump
 SIZE := ${CROSS_COMPILE}size
 NM := ${CROSS_COMPILE}nm
-BOOTLOADHID_BASE ?= .
+DDKSW_BASE ?= .
 
 # MCU name
 CHIP_NO ?= 168
@@ -178,9 +178,9 @@ download: bootloadHID ${TARGET}.hex
 prepare: bootloadHID
 
 bootloadHID:
-	make -C ${BOOTLOADHID_BASE}/BootloadHID/commandline
-	cp ${BOOTLOADHID_BASE}/BootloadHID/commandline/bootloadHID $@
-	make -C ${BOOTLOADHID_BASE}/BootloadHID/commandline clean
+	make -C ${DDKSW_BASE}/BootloadHID/commandline
+	cp ${DDKSW_BASE}/BootloadHID/commandline/bootloadHID $@
+	make -C ${DDKSW_BASE}/BootloadHID/commandline clean
 
 burn: ${TARGET}.hex
 	avrdude ${AVRDUDEFLAGS} -U flash:w:$<:i

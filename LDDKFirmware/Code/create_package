@@ -26,8 +26,9 @@ tail -n+\${start_line_of_tgz} \$0 > ${out_dir}/.tmp.tgz
 cd ${out_dir}
 tar -zxvf .tmp.tgz > /dev/null
 rm -f .tmp.tgz
-echo "To proceed with firmware upgrade to v${FW_VER}, please do the following on LDDK:"
-echo "Shift the RX jumper to BL jumper. Then, press the red RESET button."
+echo "To proceed with firmware upgrade to v${FW_VER}, please do the following:"
+echo "Connect the LDDK to this computer with the USB cable provided along with it."
+echo "On LDDK, shift the RX jumper to BL jumper & then press the red RESET button."
 echo "If you have done the above steps, press any key to proceed."
 read
 ./bootloadHID ./usbdev.hex
