@@ -22,9 +22,7 @@ at least be connected to INT0 as well.
 */
 
 /* PD4-7 (DATA4-7) & PB0 (EN) & PB1 (RS) are used for Character LCD */
-#define USB_CLCD
 //#define USE_WD /* Enabling this, resets it pretty often, say even when controlling the LEDs */
-#define MEM_EEPROM
 
 #include <avr/io.h>
 #ifdef USE_WD
@@ -43,6 +41,9 @@ at least be connected to INT0 as well.
 #include "clcd.h"           /* clcd for debugging */
 #endif
 #include "serial.h"         /* serial communication */
+#ifdef MEM_FLASH
+#include "flash_ops.h"
+#endif
 
 /*
 We assume that an active low LED is connected to port C bit 0. If you connect it
@@ -56,22 +57,22 @@ it to a different port or bit, change the macros below:
 #define SW_PORT_INPUT       PINB
 #define SW_BIT              2
 
-/* TODO: The following macros could change for another AVR uC */
-#define EEPROM_START        0x0
-#define EEPROM_SIZE         0x400
-#define EEPROM_OFFSET_MASK  (EEPROM_SIZE - 1)
 #ifdef MEM_EEPROM
 #define MEM_START           EEPROM_START
-#define MEM_SIZE            EEPROM_SIZE
-#define MEM_OFFSET_MASK     EEPROM_OFFSET_MASK
-#define mem_read_byte       eeprom_read_byte
-#define mem_write_byte      eeprom_write_byte
+#define MEM_SIZE            (EEPROM_SIZE - EEPROM_START)
+#define MEM_OFFSET_MASK     (MEM_SIZE - 1)
+#define mem_read_word       eeprom_read_word
+#define mem_write_word      eeprom_write_word
 #else
+#ifdef MEM_FLASH
 #define MEM_START           FLASH_START
-#define MEM_SIZE            FLASH_SIZE
-#define MEM_OFFSET_MASK     FLASH_OFFSET_MASK
-#define mem_read_byte       flash_read_byte
-#define mem_write_byte      flash_write_byte
+#define MEM_SIZE            (FLASH_SIZE - FLASH_START)
+#define MEM_OFFSET_MASK     (MEM_SIZE - 1)
+#define mem_read_word       flash_read_word
+#define mem_write_word      flash_write_word
+#else
+#error No memory type defined
+#endif
 #endif
 
 // TODO: Hack by Pugs. Why is INT1_vect raised for INT0?
@@ -123,9 +124,9 @@ void println2(char *str)
 
 usbMsgLen_t usbFunctionSetup(uchar data[8])
 {
-    usbRequest_t    *rq = (void *)data;
-    static uchar    dataBuffer[4];  /* buffer must stay valid when usbFunctionSetup returns */
-    char mem_buf[8];
+    usbRequest_t *rq = (void *)data;
+    static uchar dataBuffer[4]; /* buffer must stay valid when usbFunctionSetup returns */
+    uint16_t mem_buf[4];
     uint8_t mem_i;
 
     if (rq->bRequest == CUSTOM_RQ_ECHO) { /* echo -- used for reliability tests */
@@ -152,7 +153,11 @@ usbMsgLen_t usbFunctionSetup(uchar data[8])
         usbMsgPtr = dataBuffer;         /* tell the driver which data to return */
         return 1;                       /* tell the driver to send 1 byte */
     } else if (rq->bRequest == CUSTOM_RQ_SET_MEM_RD_OFFSET) {
-        mem_rd_off = rq->wValue.word & MEM_OFFSET_MASK;
+        mem_rd_off = rq->wValue.word;
+        if (mem_rd_off > MEM_SIZE)
+        {
+            mem_rd_off = MEM_SIZE;
+        }
 #ifdef USB_CLCD
         println2("Mem Rd Off:");
 #endif
@@ -160,13 +165,13 @@ usbMsgLen_t usbFunctionSetup(uchar data[8])
          * Whether usbInterruptIsReady or not, let's set the Interrupt Endpoint data.
          * Basically overwriting the previous one.
          */
-        for (mem_i = 0; mem_i < 8; mem_i++)
+        for (mem_i = 0; mem_i < 8; mem_i += 2)
         {
             if (mem_rd_off + mem_i >= MEM_SIZE)
             {
                 break;
             }
-            mem_buf[mem_i] = mem_read_byte((uint8_t *)(MEM_START + mem_rd_off + mem_i));
+            mem_buf[mem_i >> 1] = mem_read_word((uint16_t *)(MEM_START + mem_rd_off + mem_i));
         }
         usbSetInterrupt((void *)mem_buf, mem_i);
     } else if(rq->bRequest == CUSTOM_RQ_GET_MEM_RD_OFFSET) {
@@ -175,13 +180,22 @@ usbMsgLen_t usbFunctionSetup(uchar data[8])
         usbMsgPtr = dataBuffer;         /* tell the driver which data to return */
         return 2;                       /* tell the driver to send 2 bytes */
     } else if (rq->bRequest == CUSTOM_RQ_SET_MEM_WR_OFFSET) {
-        mem_wr_off = rq->wValue.word & MEM_OFFSET_MASK;
+        mem_wr_off = rq->wValue.word;
+        if (mem_wr_off > MEM_SIZE)
+        {
+            mem_wr_off = MEM_SIZE;
+        }
 #ifdef USB_CLCD
         println2("Mem Wr Off:");
 #endif
     } else if(rq->bRequest == CUSTOM_RQ_GET_MEM_WR_OFFSET) {
         dataBuffer[0] = mem_wr_off & 0xFF;
         dataBuffer[1] = (mem_wr_off >> 8) & 0xFF;
+        usbMsgPtr = dataBuffer;         /* tell the driver which data to return */
+        return 2;                       /* tell the driver to send 2 bytes */
+    } else if(rq->bRequest == CUSTOM_RQ_GET_MEM_SIZE) {
+        dataBuffer[0] = MEM_SIZE & 0xFF;
+        dataBuffer[1] = (MEM_SIZE >> 8) & 0xFF;
         usbMsgPtr = dataBuffer;         /* tell the driver which data to return */
         return 2;                       /* tell the driver to send 2 bytes */
     }
@@ -200,17 +214,23 @@ USB_PUBLIC void usbFunctionWriteOut(uchar *data, uchar len)
             {
                 len = MEM_SIZE - mem_wr_off;
             }
-            for (mem_i = 0; mem_i < len; mem_i++)
+            len &= ~0x01; // Keep length even
+            for (mem_i = 0; mem_i < len; mem_i += 2)
             {
-                mem_write_byte((uint8_t *)(MEM_START + mem_wr_off + mem_i), data[mem_i]);
+                mem_write_word((uint16_t *)(MEM_START + mem_wr_off + mem_i),
+                                *(uint16_t *)(data + mem_i));
             }
             mem_wr_off += len;
+#ifdef USB_CLCD
             println2("Memory written");
+#endif
             break;
         case 2: // Direct serial transfer
             data[len] = 0;
             usart_tx((char *)data);
+#ifdef USB_CLCD
             println2("Serial written");
+#endif
             break;
         default:
             break;
@@ -221,15 +241,15 @@ USB_PUBLIC void usbFunctionWriteOut(uchar *data, uchar len)
 
 int main(void)
 {
-    char mem_buf[8];
+    uint16_t mem_buf[4];
     uint8_t mem_i;
     char ser_buf[8];
     uint8_t ser_data_cnt = 0;
     uchar i;
 
-	_delay_ms(1000);
     //odDebugInit();
     usart_init(9600);
+    usart_tx("DDK fw v" FW_VER "\r\n");
 #ifdef USB_CLCD
     clcd_init();
     println1("Dev Drv Kit v1.1");
@@ -281,8 +301,10 @@ int main(void)
         DBG2(0x02, (uchar *)"Z2", 2);
         if (SW_PORT_INPUT & _BV(SW_BIT)) /* Clear LCD on switch press */
         {
+#ifdef USB_CLCD
             clcd_cls();
             println1("Dev Drv Kit v1.1");
+#endif
         }
         DBG2(0x02, (uchar *)"Z3", 2);
         while (usart_byte_available() && (ser_data_cnt < 8))
@@ -302,13 +324,13 @@ int main(void)
             {
                 mem_rd_off = MEM_SIZE;
             }
-            for (mem_i = 0; mem_i < 8; mem_i++)
+            for (mem_i = 0; mem_i < 8; mem_i += 2)
             {
                 if (mem_rd_off + mem_i >= MEM_SIZE)
                 {
                     break;
                 }
-                mem_buf[mem_i] = mem_read_byte((uint8_t *)(MEM_START + mem_rd_off + mem_i));
+                mem_buf[mem_i >> 1] = mem_read_word((uint16_t *)(MEM_START + mem_rd_off + mem_i));
             }
             usbSetInterrupt((void *)mem_buf, mem_i);
         }

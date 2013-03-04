@@ -57,4 +57,10 @@
  * the current offset to the host. The offset LSB is in the byte 0.
  */
 
+#define CUSTOM_RQ_GET_MEM_SIZE         7
+/* Get the EEPROM size. Control-IN.
+ * This control transfer involves a 2 byte data phase where the device sends
+ * the EEPROM size to the host. The offset LSB is in the byte 0.
+ */
+
 #endif /* __REQUESTS_H_INCLUDED__ */
