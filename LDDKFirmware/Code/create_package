@@ -1,0 +1,49 @@
+#!/bin/bash
+#
+# Copyright (C) eSrijan Innovations Private Limited
+#
+# Author: Anil Kumar Pugalia <anil_pugalia@eSrijan.com>
+#
+# Licensed under: JSL (See LICENSE file for details)
+#
+
+if [ $# -ne 2 ]
+then
+	echo "Usage: $0 <tgz_file_to_package> <package_file>"
+	exit 1
+fi
+
+content_file=$1
+package_file=$2
+out_dir=.`basename ${content_file} .tgz`
+
+cat > ${package_file} <<PACKAGE_HDR
+#!/bin/bash
+
+mkdir -p ${out_dir}
+start_line_of_tgz=\$((\`grep -an "^TGZ_CONTENT$" \$0 | cut -d: -f1\` + 1))
+tail -n+\${start_line_of_tgz} \$0 > ${out_dir}/.tmp.tgz
+cd ${out_dir}
+tar -zxvf .tmp.tgz > /dev/null
+rm -f .tmp.tgz
+echo "To proceed with firmware upgrade to v${FW_VER}, please do the following on LDDK:"
+echo "Shift the RX jumper to BL jumper. Then, press the red RESET button."
+echo "If you have done the above steps, press any key to proceed."
+read
+./bootloadHID ./usbdev.hex
+retval=\$?
+cd ..
+rm -fr ${out_dir}
+if [ \${retval} = 0 ]
+then
+	echo "Upgrading to firmware v${FW_VER} completed successfully."
+	echo "Now, shift the BL jumper back to RX jumper."
+else
+	echo "Upgrading to firmware v${FW_VER} failed."
+fi
+exit \${retval}
+TGZ_CONTENT
+PACKAGE_HDR
+cat ${content_file} >> ${package_file}
+
+chmod +x ${package_file}

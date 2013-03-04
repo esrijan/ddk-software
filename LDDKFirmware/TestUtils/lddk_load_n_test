@@ -1,0 +1,87 @@
+#!/bin/bash
+#
+# Copyright (C) eSrijan Innovations Private Limited
+#
+# Author: Anil Kumar Pugalia <anil_pugalia@eSrijan.com>
+#
+# Licensed under: JSL (See LICENSE file for details)
+#
+
+SUDO=sudo
+FIRMWARE_BASE=../Code
+USBTOOL_BASE="USBDeviceTest"
+IDENTIFIER="-v 0x16c0 -p 0x05dc"
+USBTOOL="${SUDO} ${USBTOOL_BASE}/usbtool ${IDENTIFIER}"
+
+led_status()
+{
+	status=`${USBTOOL} control in vendor device 2 0 0 &> /dev/null`
+	if [ "${status}" = "" ]
+	then
+		echo "LDDK not detected"
+		exit 1
+	fi
+	if [ ${status} = 0x00 ]
+	then
+		echo "LED Status: Off"
+	else
+		echo "LED Status: On"
+	fi
+}
+led_set()
+{
+	if [ "$1" = "off" ]
+	then
+		echo -n "Switching Off LED ... "
+		if (${USBTOOL} control out vendor device 1 0 0 > /dev/null)
+		then
+			echo "failed"
+		else
+			echo "done"
+		fi
+	else
+		echo -n "Switching On LED ... "
+		if (${USBTOOL} control out vendor device 1 1 0 > /dev/null)
+		then
+			echo "failed"
+		else
+			echo "done"
+		fi
+	fi
+}
+
+if [ "$1" = "-l" ]
+then
+	make -C ${FIRMWARE_BASE} package
+	${FIRMWARE_BASE}/upgrade_firmware
+	while [ "${device}" = "" ]
+	do
+		echo "Change BL jumper to RX and press any key to continue"
+		read
+		device=`${USBTOOL} list`
+	done
+	echo "Our Device: ${device}"
+fi
+led_status
+sleep 1
+led_set on
+led_status
+sleep 1
+led_set off
+led_status
+sleep 1
+led_set on
+echo -n "Writing serial data ... "
+${USBTOOL} -e 0x02 interrupt out -D ${USBTOOL_BASE}/data > /dev/null
+echo -n "done. Check your serial console for '"
+cat ${USBTOOL_BASE}/data
+echo "' and enter some data there."
+sleep 5
+echo "Reading serial data ... "
+for i in `seq 1 3`
+do
+	${USBTOOL} -e 0x82 interrupt in
+	sleep 1
+done
+echo "Now test the B0-B7 by grounding the resistors or by re-powering the board"
+echo "And finally set the RX jumper towards B7"

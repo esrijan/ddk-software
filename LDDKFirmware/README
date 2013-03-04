@@ -18,6 +18,7 @@ This directory contains various parts of this projects, along with the
 following in capital letters:
 
 + README - this file
++ LICENSE - project's license file
 
 + Code - Firmware for DDK to become a USB device for various Linux device
 	driver experiments

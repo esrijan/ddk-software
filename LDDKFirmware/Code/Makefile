@@ -8,6 +8,7 @@
 
 BOOTLOADHID_BASE := ../..
 
+FW_VER := 1.1
 #USB_CLCD := 1
 ifdef USB_CLCD
 CSRCS := $(wildcard *.c)
@@ -41,7 +42,7 @@ endif
 F_CPU := 16000000
 #F_CPU := 20000000
 include ../../rules.mk
-CFLAGS += -DFW_VER=\"1.1\"
+CFLAGS += -DFW_VER=\"${FW_VER}\"
 CFLAGS += -DEEPROM_START=${EEPROM_START} -DFLASH_START=${FLASH_START}
 CFLAGS += -DEEPROM_SIZE=${EEPROM_SIZE} -DFLASH_SIZE=${FLASH_SIZE}
 CFLAGS += -DMEM_EEPROM
@@ -50,3 +51,12 @@ ifdef USB_CLCD
 CFLAGS += -DUSB_CLCD
 endif
 LDFLAGS += -L${TOOLS_BASE}/AVR/avr/lib/avr5 # Needed for EEPROM functions
+
+package: uf.tgz
+	FW_VER=${FW_VER} ./create_package $^ upgrade_firmware
+	${RM} $^
+
+uf.tgz: ${TARGET}.hex
+	@${MAKE} -C ${BOOTLOADHID_BASE}/BootloadHID/commandline && cp ${BOOTLOADHID_BASE}/BootloadHID/commandline/bootloadHID .
+	tar -zcvf $@ bootloadHID ${TARGET}.hex > /dev/null
+	@${RM} bootloadHID
