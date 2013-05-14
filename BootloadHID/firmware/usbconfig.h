@@ -156,7 +156,7 @@ tuningOverflow:
  * you use obdev's free shared VID/PID pair. Be sure to read the rules in
  * USBID-License.txt!
  */
-#define USB_CFG_DEVICE_VERSION  0x00, 0x01
+#define USB_CFG_DEVICE_VERSION  0x10, 0x02
 /* Version number of the device: Minor number first, then major number.
  */
 #define USB_CFG_VENDOR_NAME     'e', 'S', 'r', 'i', 'j', 'a', 'n', ' ', 'I', 'n', 'n', 'o', 'v', 'a', 't', 'i', 'o', 'n', 's', ' ', 'P', 'r', 'i', 'v', 'a', 't', 'e', ' ', 'L', 'i', 'm', 'i', 't', 'e', 'd', ' ', '<', 'e', 'S', 'r', 'i', 'j', 'a', 'n', '.', 'c', 'o', 'm', '>'
@@ -169,11 +169,11 @@ tuningOverflow:
  * obdev's free shared VID/PID pair. See the file USBID-License.txt for
  * details.
  */
-#define USB_CFG_DEVICE_NAME     'H', 'I', 'D', 'B', 'o', 'o', 't'
-#define USB_CFG_DEVICE_NAME_LEN 7
+#define USB_CFG_DEVICE_NAME     'H', 'I', 'D', 'B', 'o', 'o', 't', ' ', 'v', '2', '.', '0'
+#define USB_CFG_DEVICE_NAME_LEN 12
 /* Same as above for the device name. If you don't want a device name, undefine
  * the macros. See the file USBID-License.txt before you assign a name if you
- * use a shared VID/PID.
+ * use a shared VID/PID. Alongwith added the version number of the bootloader.
  */
 /*#define USB_CFG_SERIAL_NUMBER   'N', 'o', 'n', 'e' */
 /*#define USB_CFG_SERIAL_NUMBER_LEN   0 */

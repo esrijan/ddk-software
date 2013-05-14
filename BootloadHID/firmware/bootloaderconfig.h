@@ -106,13 +106,36 @@ these macros are defined, the boot loader usees them.
 #ifndef __ASSEMBLER__   /* assembler cannot parse function definitions */
 #include <util/delay.h>
 
+/*
+We assume that an active high LED is connected to port B bit 7. If you connect
+it with different polarity change it in the usbFunctionSetup below. If you
+connect it to a different port or bit, change the macros below:
+*/
+#define LED_PORT_DDR        DDRB
+#define LED_PORT_OUTPUT     PORTB
+#define LED_BIT             7
+#define DL_PORT_DDR         DDRB
+#define DL_PORT_PULLUP      PORTB
+#define DL_PORT_INPUT       PINB
+#define DL_BIT              4
+
 static inline void  bootLoaderInit(void)
 {
-    PORTB = 1 << 4; /* activate pull-up for key */
-    _delay_us(10);  /* wait for levels to stabilize */
+	DL_PORT_PULLUP |= _BV(DL_BIT);	/* Activate pull-up for key */
+    DL_PORT_DDR &= ~_BV(DL_BIT);	/* Make the switch bit an input */
+    _delay_us(10);					/* Wait for levels to stabilize */
+    LED_PORT_OUTPUT |= _BV(LED_BIT);/* Switch on LED to start with */
+    LED_PORT_DDR |= _BV(LED_BIT);	/* Make the LED bit an output */
+}
+static inline void  bootLoaderShut(void)
+{
+	DL_PORT_PULLUP &= ~_BV(DL_BIT);	/* Reset / De-activate pull-up for key */
+    LED_PORT_OUTPUT &= ~_BV(LED_BIT);/* Switch off LED before stopping */
+    LED_PORT_DDR &= ~_BV(LED_BIT);	/* Reset the LED bit to default input state */
 }
 
-#define bootLoaderCondition()   ((PINB & (1 << 4)) == 0)   /* True if jumper is set */
+#define bootLoaderCondition() ((DL_PORT_INPUT & _BV(DL_BIT)) == 0) /* True if switch is pressed */
+#define toggleLED() (LED_PORT_OUTPUT ^= _BV(LED_BIT))
 
 #endif
 

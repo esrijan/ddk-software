@@ -21,6 +21,8 @@ static void leaveBootloader() __attribute__((__noreturn__));
 #include "bootloaderconfig.h"
 #include "usbdrv.c"
 
+#include "fwb.h"
+
 /* ------------------------------------------------------------------------ */
 
 #ifndef ulong
@@ -93,6 +95,7 @@ static void leaveBootloader()
 #endif
     GICR = (1 << IVCE);     /* enable change of interrupt vectors */
     GICR = (0 << IVSEL);    /* move interrupts to application flash section */
+    bootLoaderShut();
 /* We must go through a global function pointer variable instead of writing
  *  ((void (*)(void))0)();
  * because the compiler optimizes a constant 0 to "rcall 0" which is not
@@ -217,8 +220,16 @@ uchar   i = 0;
 
 int __attribute__((noreturn)) main(void)
 {
+    unsigned int blink_cnt = 0;
+
     /* initialize hardware */
     bootLoaderInit();
+    /*
+     * Calling the function below for it to get included in the bootloader.
+     * Also, making sure that it actually doesn't do anything. And hence,
+     * passing an unaligned address 0x0001, for the function to fail.
+     */
+    flash_write_block((uint8_t *)(0x0001), NULL);
     odDebugInit();
     DBG1(0x00, 0, 0);
     /* jump to application if jumper is set */
@@ -232,6 +243,14 @@ int __attribute__((noreturn)) main(void)
         do{ /* main event loop */
             wdt_reset();
             usbPoll();
+
+            /* The following piece of code indicates being in bootloader */
+            if (++blink_cnt == 60000)
+            {
+                blink_cnt = 0;
+                toggleLED();
+            }
+
 #if BOOTLOADER_CAN_EXIT
             if(exitMainloop){
 #if F_CPU == 12800000
@@ -243,7 +262,7 @@ int __attribute__((noreturn)) main(void)
                 }
             }
 #endif
-        }while(bootLoaderCondition());
+        }while(1);
     }
     leaveBootloader();
 }
