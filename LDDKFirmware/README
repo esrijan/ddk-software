@@ -1,8 +1,8 @@
-ddk-software
+LDDKFirmware
 ============
 
-Firmware for Device Development Kit (DDK)'s, for it to become a USB device
-for various Linux device driver experiments
+Firmware for Device Development Kit (DDK) to become a USB device for various
+Linux device driver experiments
 
 This project is released under the Juice Sharing License (See LICENSE file
 for details). Many parts of this project have been derived from other open

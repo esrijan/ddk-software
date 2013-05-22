@@ -8,7 +8,7 @@
 
 DDKSW_BASE := ../..
 
-FW_VER := 1.3
+FW_VER := 2.0
 #USE_CLCD := 1
 #USE_FLASH := 1
 CSRCS := $(wildcard *.c)
@@ -23,8 +23,8 @@ OBJS := $(CSRCS:.c=.o) $(ASRCS:.S=.o)
 TARGET := usbdev
 
 #CHIP_NO := 168
-#CHIP_NO := 32
-CHIP_NO := 16
+CHIP_NO := 32
+#CHIP_NO := 16
 EEPROM_START := 0
 ifdef USE_CLCD
 FLASH_START := 0x2000

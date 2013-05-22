@@ -21,6 +21,7 @@ OBJCOPY := ${CROSS_COMPILE}objcopy
 OBJDUMP := ${CROSS_COMPILE}objdump
 SIZE := ${CROSS_COMPILE}size
 NM := ${CROSS_COMPILE}nm
+AVRDUDE := avrdude
 DDKSW_BASE ?= .
 
 # MCU name
@@ -173,7 +174,7 @@ all: ${TARGET}.hex
 #all: ${TARGET}.hex ${TARGET}.eep ${TARGET}.sym ${TARGET}.lss
 
 download: bootloadHID ${TARGET}.hex
-	sudo ./$^
+	sudo ./bootloadHID -r ${TARGET}.hex
 
 prepare: bootloadHID
 
@@ -183,29 +184,29 @@ bootloadHID:
 	make -C ${DDKSW_BASE}/BootloadHID/commandline clean
 
 burn: ${TARGET}.hex
-	avrdude ${AVRDUDEFLAGS} -U flash:w:$<:i
+	${AVRDUDE} ${AVRDUDEFLAGS} -U flash:w:$<:i
 
 erase:
-	avrdude ${AVRDUDEFLAGS} -e
+	${AVRDUDE} ${AVRDUDEFLAGS} -e
 
 read:
-	avrdude ${AVRDUDEFLAGS} -U flash:r:${TARGET}.rd.hex:i
+	${AVRDUDE} ${AVRDUDEFLAGS} -U flash:r:${TARGET}.rd.hex:i
 
 burnfuse:
-	avrdude ${AVRDUDEFLAGS} $(addprefix -U , ${FUSELIST})
+	${AVRDUDE} ${AVRDUDEFLAGS} $(addprefix -U , ${FUSELIST})
 
 #readfuse:
-#	avrdude ${AVRDUDEFLAGS} -U hfuse:r:-:m -U lfuse:r:-:m
+#	${AVRDUDE} ${AVRDUDEFLAGS} -U hfuse:r:-:m -U lfuse:r:-:m
 
 lock:
-	avrdude ${AVRDUDEFLAGS} -U lock:w:${LOCK}:m
+	${AVRDUDE} ${AVRDUDEFLAGS} -U lock:w:${LOCK}:m
 
 shell:
-	avrdude -v ${AVRDUDEFLAGS} -t
+	${AVRDUDE} -v ${AVRDUDEFLAGS} -t
 
 %.hex: %.elf
-	#${OBJCOPY} -O ${FORMAT} -R .eeprom $< $@
-	${OBJCOPY} -j .text -j .data -O ${FORMAT} $< $@
+	${OBJCOPY} -O ${FORMAT} -R .eeprom $< $@
+	#${OBJCOPY} -j .text -j .data -O ${FORMAT} $< $@
 	${SIZE} $@
 
 %.eep: %.elf

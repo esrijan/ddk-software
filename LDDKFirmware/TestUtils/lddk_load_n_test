@@ -10,8 +10,11 @@
 SUDO=sudo
 FIRMWARE_BASE=${PWD}/`dirname $0`/../Code
 USBTOOL_BASE=${PWD}/`dirname $0`/USBDeviceTest
+LEDTEST_BASE=${PWD}/`dirname $0`
 IDENTIFIER="-v 0x16c0 -p 0x05dc"
+SERIAL_PORT=/dev/ttyUSB0
 USBTOOL="${SUDO} ${USBTOOL_BASE}/usbtool ${IDENTIFIER}"
+LEDTEST="${LEDTEST_BASE}/led_array_test ${SERIAL_PORT}"
 
 led_status()
 {
@@ -42,22 +45,24 @@ led_set()
 
 if [ "$1" = "-l" ]
 then
+	echo "Connect the serial cable (on both sides) and start minicom."
+	echo -n "Now, press any key to continue."
+	read
 	make -C ${FIRMWARE_BASE} package
 	${SUDO} ${FIRMWARE_BASE}/upgrade_firmware
 	if [ $? -ne 0 ]
 	then
 		exit
 	fi
-	echo "Before that reconnect the serial cable (on both sides) and start minicom."
-	echo "Check for DDK ver display on BL jumper change to RX."
-	echo "Now, press any key to continue."
+	echo "Check for DDK ver display on the serial output."
+	echo -n "Now, press any key to continue."
 	read
 	device=`${USBTOOL} list`
 	while [ "${device}" = "" ]
 	do
 		echo "Reconnect the serial cable (on both sides) and start minicom."
-		echo "Then, change BL jumper to RX. Check for DDK ver display."
-		echo "Now, press any key to continue."
+		echo "Then, press the red RESET button. Check for DDK ver display."
+		echo -n "Now, press any key to continue."
 		read
 		device=`${USBTOOL} list`
 	done
@@ -84,6 +89,9 @@ do
 	${USBTOOL} -e 0x82 interrupt in
 	sleep 1
 done
-echo "Now quit minicom & test the B0-B7 by grounding the resistors or by re-powering the board."
-echo "Then power off the board and set the RX jumper towards B7."
+echo "Now quit minicom, switch off, set the RX-TX jumper pair towards B7, and repower."
+echo -n "Press <Enter> to check the led array on, off, and then alternating."
+read
+${LEDTEST}
+echo "Now switch off & and set the RX-TX jumper pair towards B0."
 echo "And finally, re-power and check for green led glowing."

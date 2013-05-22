@@ -54,6 +54,7 @@ connect it to a different port or bit, change the macros below:
 #define LED_PORT_OUTPUT     PORTB
 #define LED_BIT             7
 #define SW_PORT_DDR         DDRB
+#define SW_PORT_PULLUP      PORTB
 #define SW_PORT_INPUT       PINB
 #define SW_BIT              2
 
@@ -268,10 +269,10 @@ int main(void)
 
     //odDebugInit();
     usart_init(9600);
-    usart_tx("DDK fw v" FW_VER "\r\n");
+    usart_tx("LDDK fw v" FW_VER "\r\n");
 #ifdef USE_CLCD
     clcd_init();
-    println1("Dev Drv Kit v1.1");
+    println1("LDDK fw v" FW_VER);
 #endif
 
 #ifdef USE_WD
@@ -301,7 +302,8 @@ int main(void)
     DBG2(0x00, (uchar *)"E", 1);
     LED_PORT_OUTPUT |= _BV(LED_BIT);  /* Switch on LED to start with */
     LED_PORT_DDR |= _BV(LED_BIT);     /* Make the LED bit an output */
-    //SW_PORT_DDR &= ~_BV(SW_BIT);      /* Make the switch bit an input */
+    SW_PORT_PULLUP |= _BV(SW_BIT);    /* Make default state pulled-up for the switch bit input */
+    SW_PORT_DDR &= ~_BV(SW_BIT);      /* Make the switch bit an input */
     printlnd("Enabling intrs");
     DBG2(0x00, (uchar *)"F", 1);
     sei();
@@ -314,11 +316,11 @@ int main(void)
 #endif
         usbPoll();
         DBG2(0x02, (uchar *)"Z2", 2);
-        if (SW_PORT_INPUT & _BV(SW_BIT)) /* Clear LCD on switch press */
+        if (!(SW_PORT_INPUT & _BV(SW_BIT))) /* Clear LCD on switch press */
         {
 #ifdef USE_CLCD
             clcd_cls();
-            println1("Dev Drv Kit v1.1");
+            println1("Dev Drv Kit v2.1");
 #endif
         }
         DBG2(0x02, (uchar *)"Z3", 2);

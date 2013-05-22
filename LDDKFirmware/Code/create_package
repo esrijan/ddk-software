@@ -27,18 +27,20 @@ cd ${out_dir}
 tar -zxvf .tmp.tgz > /dev/null
 rm -f .tmp.tgz
 echo "To proceed with firmware upgrade to v${FW_VER}, please do the following:"
-echo "Connect the LDDK to this computer with the USB cable provided along with it."
-echo "On LDDK, shift the RX jumper to BL jumper & then press the red RESET button."
-echo "If you have done the above steps, press any key to proceed."
+echo "1. Connect the LDDK to this computer with the USB cable provided along with it."
+echo "2. Switch on the LDDK by pressing the power switch on the LDDK."
+echo "3. Press the white DOWNLOAD & red RESET buttons together."
+echo "4. First release the RESET, and then the DOWNLOAD button."
+echo "5. If green PGM LED starts blinking, press any key to proceed."
+echo "Otherwise, repeat the above sequence 3 to 5."
 read
-./bootloadHID ./usbdev.hex
+./bootloadHID -r ./usbdev.hex
 retval=\$?
 cd ..
 rm -fr ${out_dir}
 if [ \${retval} = 0 ]
 then
 	echo "Upgrading to firmware v${FW_VER} completed successfully."
-	echo "Now, shift the BL jumper back to RX jumper."
 else
 	echo "Upgrading to firmware v${FW_VER} failed."
 fi
