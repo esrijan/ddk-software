@@ -7,14 +7,18 @@
  *
  * ATmega16/32
  *
- * Header for Flash Operation Functions
+ * Header for Flash Operation Functions for DDK v2.1
  */
 
-#ifndef FLASH_OPS_H
-#define FLASH_OPS_H
+#ifndef FLASH_H
+#define FLASH_H
 
 #include <avr/io.h>
 
-uint16_t flash_read_word(uint16_t *addr);
-void flash_write_word(uint16_t *addr, uint16_t word);
+#define BLOCK_SIZE SPM_PAGESIZE /* in bytes */
+
+uint8_t flash_read_byte(const uint8_t *addr);
+/* block_addr should be BLOCK_SIZE aligned */
+int flash_read_block(const uint8_t *block_addr, uint8_t *data);
+int (*flash_write_block)(uint8_t *block_addr, uint8_t *data);
 #endif

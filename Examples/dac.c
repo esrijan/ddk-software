@@ -10,16 +10,22 @@
  * DAC is basically averaging out PWM to analog voltages.
  * This example uses Fast PWM mode of 8-bit Timer/Counter0 for DAC output on
  * OC0/PB3/AIN1 (Pin 4), which is controlled using a switch connected to PB2.
+ *
+ * For trying this example on DDK's, make sure of the following:
+ * 	DDK v1.1: RX jumper should be on the left-most pin pair.
+ * 	DDK v2.1: Both RX-TX jumpers should be on the right-most pin pairs.
  */
 
 #include <avr/io.h>
 #include <util/delay.h>
 
+#include "ddk.h"
 #include "serial.h"
 
 void init_io(void)
 {
 	// 1 = output, 0 = input
+	BUTTON_INIT;
 	DDRB = 0b10000000; // Set PB2 as input & PB7 as output
 	usart_init(9600);
 }
@@ -85,10 +91,10 @@ int main(void)
 			TIFR |= (1 << OCF0);
 		}
 #if 0
-		if (can_change_state && (PINB & (1 << 2)))
+		if (can_change_state && (BUTTON_PRESSED))
 		{
 			_delay_ms(20);
-			if (PINB & (1 << 2)) // debouncing check
+			if (BUTTON_PRESSED) // debouncing check
 			{
 				digital += 4;
 				set_digital(digital);
@@ -98,7 +104,7 @@ int main(void)
 		else
 		{
 			_delay_ms(20);
-			if (!(PINB & (1 << 2))) // debouncing check
+			if (BUTTON_RELEASED) // debouncing check
 			{
 				can_change_state = 1;
 			}

@@ -5,7 +5,7 @@
  *
  * Licensed under: JSL (See LICENSE file for details)
  *
- * ATmega16/32
+ * ATmega48/88/168, ATmega16/32
  * 
  * Toggles on & off a fan through a switch, and accordingly show its status on
  * an LED.
@@ -18,9 +18,12 @@
 #include <avr/io.h>
 #include <util/delay.h>
 
+#include "ddk.h"
+
 void init_io(void)
 {
 	// 1 = output, 0 = input
+	BUTTON_INIT;
 	DDRB |= 0b10000000;
 	DDRC |= 0b00000001;
 }
@@ -33,21 +36,21 @@ int main(void)
 
 	while (1)
 	{
-		if (can_change_state && (PINB & (1 << 2)))
+		if (can_change_state && (BUTTON_PRESSED))
 		{
 			_delay_ms(20);
-			if (PINB & (1 << 2)) // debouncing check
+			if (BUTTON_PRESSED) // debouncing check
 			{
 				state = !state;
 				if (state)
 				{
 					PORTB |= (1 << 7);
-					PORTC |= (1 << 7);
+					PORTC |= (1 << 0);
 				}
 				else
 				{
 					PORTB &= ~(1 << 7);
-					PORTC &= ~(1 << 7);
+					PORTC &= ~(1 << 0);
 				}
 				can_change_state = 0;
 			}
@@ -55,7 +58,7 @@ int main(void)
 		else
 		{
 			_delay_ms(20);
-			if (!(PINB & (1 << 2))) // debouncing check
+			if (BUTTON_RELEASED) // debouncing check
 			{
 				can_change_state = 1;
 			}

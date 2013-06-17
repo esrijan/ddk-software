@@ -8,23 +8,15 @@
 
 DDKSW_BASE := ../..
 
-FW_VER := 2.0
 #USE_CLCD := 1
 #USE_FLASH := 1
-CSRCS := $(wildcard *.c)
-ifndef USE_CLCD
-CSRCS := $(filter-out clcd.c, ${CSRCS})
-endif
-ifndef USE_FLASH
-CSRCS := $(filter-out flash.c, ${CSRCS})
-endif
-ASRCS := $(wildcard *.S)
-OBJS := $(CSRCS:.c=.o) $(ASRCS:.S=.o)
-TARGET := usbdev
 
-#CHIP_NO := 168
+FW_VER := 2.0
+
 CHIP_NO := 32
 #CHIP_NO := 16
+F_CPU := 16000000
+
 EEPROM_START := 0
 ifdef USE_CLCD
 FLASH_START := 0x2000
@@ -42,22 +34,38 @@ ifeq (${CHIP_NO}, 16)
 	FLASH_SIZE := 0x3800
 endif
 endif
-F_CPU := 16000000
-#F_CPU := 20000000
+
+CSRCS := $(wildcard *.c)
+ifndef USE_CLCD
+CSRCS := $(filter-out clcd.c, ${CSRCS})
+endif
+ifndef USE_FLASH
+CSRCS := $(filter-out flash.c, ${CSRCS})
+endif
+ASRCS := $(wildcard *.S)
+OBJS := $(CSRCS:.c=.o) $(ASRCS:.S=.o)
+TARGET := usbdev
+
+all: ${TARGET}.hex
+#all: ${TARGET}.hex ${TARGET}.eep ${TARGET}.sym ${TARGET}.lss
+
 include ${DDKSW_BASE}/rules.mk
-CFLAGS += -DFW_VER=\"${FW_VER}\"
-CFLAGS += -DEEPROM_START=${EEPROM_START} -DFLASH_START=${FLASH_START}
-CFLAGS += -DEEPROM_SIZE=${EEPROM_SIZE} -DFLASH_SIZE=${FLASH_SIZE}
+
+ifdef USE_CLCD
+CFLAGS += -DUSE_CLCD
+endif
 ifdef USE_FLASH
 CFLAGS += -DMEM_FLASH
 else
 CFLAGS += -DMEM_EEPROM
 endif
+CFLAGS += -DFW_VER=\"${FW_VER}\"
+CFLAGS += -DEEPROM_START=${EEPROM_START} -DFLASH_START=${FLASH_START}
+CFLAGS += -DEEPROM_SIZE=${EEPROM_SIZE} -DFLASH_SIZE=${FLASH_SIZE}
 CFLAGS += -DDEBUG_LEVEL=0
-ifdef USE_CLCD
-CFLAGS += -DUSE_CLCD
-endif
 LDFLAGS += -L${TOOLS_BASE}/AVR/avr/lib/avr5 # Needed for EEPROM functions
+
+${TARGET}.elf: ${OBJS}
 
 prepare: package
 
@@ -67,6 +75,11 @@ package: uf.tgz
 
 uf.tgz: bootloadHID ${TARGET}.hex
 	tar -zcvf $@ $^ > /dev/null
+
+clean:
+	${RM} ${TARGET}.hex ${TARGET}.eep ${TARGET}.elf
+	${RM} ${TARGET}.lss ${TARGET}.sym ${TARGET}.map
+	${RM} *.o *.lst
 
 mrproper: allclean
 	${RM} upgrade_firmware

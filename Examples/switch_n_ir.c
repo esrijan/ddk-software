@@ -7,7 +7,8 @@
  *
  * ATmega48/88/168, ATmega16/32
  * 
- * Reads switch input from PB2, and output the same to LED on PB7
+ * Sends out IR (through IR LED connected on PB3) on switch (PB2) press.
+ * Alongwith toggle the LED on PB7.
  */
 
 #include <avr/io.h>
@@ -19,7 +20,7 @@ void init_io(void)
 {
 	// 1 = output, 0 = input
 	BUTTON_INIT;
-	DDRB |= 0b10000000;
+	DDRB = 0b10001000;
 }
 
 int main(void)
@@ -30,11 +31,13 @@ int main(void)
 	{
 		if (BUTTON_PRESSED)
 		{
-			PORTB |= (1 << 7);
+			PORTB |= (1 << PB3);
+			PORTB |= (1 << PB7);
 		}
 		else
 		{
-			PORTB &= ~(1 << 7);
+			PORTB &= ~(1 << PB3);
+			PORTB &= ~(1 << PB7);
 		}
 	}
 

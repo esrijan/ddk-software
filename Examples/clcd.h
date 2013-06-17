@@ -5,7 +5,9 @@
  *
  * Licensed under: JSL (See LICENSE file for details)
  *
- * Header for Character LCD Functions for ATmega48/88/168, ATmega16/32
+ * ATmega48/88/168, ATmega16/32
+ *
+ * Header for Character LCD Functions
  */
 
 #ifndef CLCD_H

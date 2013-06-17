@@ -9,16 +9,21 @@
  * 
  * ASK RF based communication using RS232 protocol.
  * RF communication between RX433 & TX433 modules, tuned to operate at 433.92 MHz
- * DOUT (Pin 2) of RX433 is assumed to be connected to ATMega's RXD (PD0) - RX jumper pin @ 'RX'
- * DIN of TX433 is assumed to be connected to ATMega's TXD (PD1) - Hole 2 of DB9 connector.
+ * DOUT (Pin 2) of RX433 is assumed to be connected to ATmega's RXD (PD0) - RX jumper pin @ 'RX'
+ * DIN of TX433 is assumed to be connected to ATmega's TXD (PD1) - Hole 2 of DB9 connector.
  * Alongwith using switch input (active high) from PB2, and led output on (PB7).
- * And CLCD for display.
+ * And CLCD for display. CLCD assumed to be connected as specified in the comments of clcd.c.
+ *
+ * For trying this example on DDK's, make sure of the following:
+ * 	DDK v1.1: RX jumper should be on the left-most pin pair.
+ * 	DDK v2.1: Both RX-TX jumpers should be on the right-most pin pairs.
  */
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <util/delay.h>
 
+#include "ddk.h"
 #include "clcd.h"
 #include "serial.h"
 
@@ -74,6 +79,7 @@ void init_io(void)
 {
 	// 1 = output, 0 = input
 	DDRA = 0b00000010; // PA1 as output & PA0 as input
+	BUTTON_INIT;
 	DDRB = 0b10000000; // PB7 as output & PB2 as input
 
 	clcd_init();
@@ -115,11 +121,11 @@ int main(void)
 	while (1)
 	{
 		/*
-		if (!(PINB & (1 << 2))) // Switch released
+		if (BUTTON_RELEASED) // Switch released
 		{
 			button_was_released = 1;
 		}
-		else if (button_was_released && (PINB & (1 << 2))) // Switch pressed
+		else if (button_was_released && BUTTON_PRESSED) // Switch pressed
 		*/
 		{
 			button_was_released = 0;

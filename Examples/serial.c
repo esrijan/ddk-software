@@ -8,8 +8,12 @@
  * ATmega16/32
  * 
  * Serial Communication Functions
- * NB Correct operation of USART module is expected only through a MAX232, i.e.
- * inverted, for both an original serial or USB2Serial (0-5V)
+ * NB Correct operation of USART module w/ PC is expected only through a MAX232,
+ * i.e. inverted, for both an original serial or USB2Serial (0-5V)
+ *
+ * For using this library on DDK's, make sure of the following:
+ * 	DDK v1.1: RX jumper should be on the left-most pin pair.
+ * 	DDK v2.1: Both RX-TX jumpers should be on the right-most pin pairs.
  */
 
 #include <avr/io.h>
@@ -89,6 +93,8 @@ void usart_rx(char *str, int max_len)
 	for (i = 0; i < max_len - 1; i++)
 	{
 		str[i] = usart_byte_rx();
+		if (str[i] == '\n')
+			break;
 	}
 	str[i] = 0;
 }

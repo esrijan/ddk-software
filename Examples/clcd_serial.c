@@ -5,7 +5,14 @@
  *
  * Licensed under: JSL (See LICENSE file for details)
  *
- * Character LCD Demo with ATmega48/88/168, ATmega16/32
+ * ATmega16/32
+ *
+ * Character LCD Demo using serial interaction. CLCD assumed to be connected as
+ * specified in the comments of clcd.c.
+ *
+ * For trying this example on DDK's, make sure of the following:
+ * 	DDK v1.1: RX jumper should be on the left-most pin pair.
+ * 	DDK v2.1: Both RX-TX jumpers should be on the right-most pin pairs.
  */
 
 #include <avr/io.h>

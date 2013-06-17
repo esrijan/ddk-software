@@ -5,6 +5,8 @@
  *
  * Licensed under: JSL (See LICENSE file for details)
  *
+ * ATmega16/32
+ *
  * Hex code for ATmega16/32 of example.c with 2 second period,
  * assuming fuses: L: E1; H: 99 (i.e. an internal RC oscillator @ 1MHz)
  * This has been extracted as is from atmega16n32_two_sec_period.hex

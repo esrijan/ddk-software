@@ -20,6 +20,7 @@
 #include <avr/io.h>
 #include <util/delay.h>
 
+#include "ddk.h"
 #ifdef USE_CLCD
 #include "clcd.h"
 #endif
@@ -32,12 +33,13 @@
 #define TL_ON (PORTB |= TL) // Test LED On
 #define TL_OFF (PORTB &= ~TL) // Test LED Off
 #define TL_TOGGLE (PORTB ^= TL) // Test LED Toggle
-#define TS_PRESSED (!!(PINB & TS)) // Test Switch Pressed
+#define TS_PRESSED (BUTTON_PRESSED) // Test Switch Pressed
 
 void init_jtag_demo(void)
 {
 	// 1 = output, 0 = input
 	T_PORT |= TL;
+	BUTTON_INIT;
 	T_PORT &= ~TS;
 }
 

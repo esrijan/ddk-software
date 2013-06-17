@@ -10,7 +10,7 @@
  * NB Tested but need a higher current power supply to drive the motor, or get
  * a lower current drawing motor
  * Controls a unipolar stepper motor with 3.125/3.75 degrees per rotation,
- * using PA0-3 as inputs to Darlington Array, outputs of which are connected to
+ * using PC0-3 as inputs to Darlington Array, outputs of which are connected to
  * the stepper motor represented by the following wires:
  * Type: 16PU-M301-G1 (Astrosyn) consumes ~1.5A @ 5V
  * + 1 - Coil11 - Pink; 2 - Coil12 - Yellow; 3 - Coil21 - Blue; 4 - Coil22 - Orange
@@ -29,7 +29,7 @@
 
 void init_io(void)
 {
-	DDRA = 0b00001111; // 4 LSBs as outputs
+	DDRC = 0b00001111; // 4 LSBs as outputs
 	DDRB = 0b10000000; // MSB as output
 	_delay_ms(500); // TODO: Is it needed?
 }
@@ -42,13 +42,13 @@ int main(void)
 	while (1)
 	{
 		PORTB = (0 << 7);
-		PORTA = WIRE(1, 1) | WIRE(2, 0) | WIRE(3, 1) | WIRE(4, 0);
+		PORTC = WIRE(1, 1) | WIRE(2, 0) | WIRE(3, 1) | WIRE(4, 0);
 		_delay_ms(speed_by_4);
-		PORTA = WIRE(1, 0) | WIRE(2, 1) | WIRE(3, 1) | WIRE(4, 0);
+		PORTC = WIRE(1, 0) | WIRE(2, 1) | WIRE(3, 1) | WIRE(4, 0);
 		_delay_ms(speed_by_4);
-		PORTA = WIRE(1, 0) | WIRE(2, 1) | WIRE(3, 0) | WIRE(4, 1);
+		PORTC = WIRE(1, 0) | WIRE(2, 1) | WIRE(3, 0) | WIRE(4, 1);
 		_delay_ms(speed_by_4);
-		PORTA = WIRE(1, 1) | WIRE(2, 0) | WIRE(3, 0) | WIRE(4, 1);
+		PORTC = WIRE(1, 1) | WIRE(2, 0) | WIRE(3, 0) | WIRE(4, 1);
 		_delay_ms(speed_by_4);
 		PORTB = (1 << 7);
 	}

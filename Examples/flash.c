@@ -7,7 +7,7 @@
  *
  * ATmega16/32
  *
- * Flash Operation Functions
+ * Flash Operation Functions for DDK v2.1
  */
 
 #include <avr/io.h>
@@ -17,35 +17,26 @@
 
 #include "flash.h"
 
-uint16_t flash_read_word(uint16_t *addr)
+uint8_t flash_read_byte(const uint8_t *addr)
 {
-	return pgm_read_word(addr);
+	return pgm_read_byte(addr);
 }
-void flash_write_word(uint16_t *addr, uint16_t word)
+int flash_read_block(const uint8_t *block_addr, uint8_t *data)
 {
 #if (FLASHEND) > 0xFFFF /* we need long addressing */
-	unsigned long a = (unsigned long)(addr);
+	unsigned long a = (unsigned long)(block_addr);
 #else
-	unsigned int a = (unsigned int)(addr);
+	unsigned int a = (unsigned int)(block_addr);
 #endif
+	int i;
 
-	/* Erase page, when we are at page's start */
-	if ((a & (SPM_PAGESIZE - 1)) == 0)
+	if ((a & (BLOCK_SIZE - 1)) != 0) /* Not block size aligned */
+		return -1;
+
+	for (i = 0; i < BLOCK_SIZE; i++)
 	{
-		cli();
-		boot_page_erase(a);
-		sei();
-		boot_spm_busy_wait(); /* Wait until page is erased */
+		data[i] = pgm_read_byte(block_addr + i);
 	}
-	cli();
-	boot_page_fill(a, word);
-	sei();
-	/* Write page when we are at page's last word */
-	if ((a & (SPM_PAGESIZE - 1)) == (SPM_PAGESIZE - 2))
-	{
-		cli();
-		boot_page_write(a & ~(SPM_PAGESIZE - 1));
-		sei();
-		boot_spm_busy_wait();
-	}
+	return 0;
 }
+int (*flash_write_block)(uint8_t *block_addr, uint8_t *data) = (int (*)(uint8_t *, uint8_t *))(FWB_ADDR / 2);

@@ -7,18 +7,15 @@
  *
  * ATmega48/88/168, ATmega16/32
  * 
- * Reads switch input from PB2, and output the same to LED on PB7
+ * Toggles the LED connected at PB7 at 1Hz
  */
 
 #include <avr/io.h>
 #include <util/delay.h>
 
-#include "ddk.h"
-
 void init_io(void)
 {
 	// 1 = output, 0 = input
-	BUTTON_INIT;
 	DDRB |= 0b10000000;
 }
 
@@ -28,14 +25,10 @@ int main(void)
 
 	while (1)
 	{
-		if (BUTTON_PRESSED)
-		{
-			PORTB |= (1 << 7);
-		}
-		else
-		{
-			PORTB &= ~(1 << 7);
-		}
+		PORTB |= (1 << 7);
+		_delay_ms(500);
+		PORTB &= ~(1 << 7);
+		_delay_ms(500);
 	}
 
 	return 0;

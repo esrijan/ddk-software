@@ -14,6 +14,10 @@
  * 	is displayed onto the serial
  * + Transmits a bit of user received data to ASK Transmitter (Small PCB)'s input connected to PC1
  * Before this whole rx-tx transmission commencement, calibration is done to sync w/ the byte start.
+ *
+ * For trying this example on DDK's, make sure of the following:
+ * 	DDK v1.1: RX jumper should be on the left-most pin pair.
+ * 	DDK v2.1: Both RX-TX jumpers should be on the right-most pin pairs.
  */
 
 #include <avr/io.h>

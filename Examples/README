@@ -1,0 +1,50 @@
+DDK Examples
+============
+
+Examples to compile & download onto the DDK boards for hacking around with
+the DDKs. These constitute of library-like code + demos
+
+These examples are released under the Juice Sharing License (See LICENSE file
+for details).
+
+This directory contains a lot of interesting ready to use examples, along with
+the following in capital letters:
+
++ README - this file
++ LICENSE - project's license file
+
++ UserManual - User manual of Electronics Device Development Kit (EDDK), as per
+	these Examples, for playing with the EDDK, i.e. DDK w/ display. This manual
+	is yet a work in progress.
+
+Compiling the Code
+==================
+
++ To compile all the examples relevant for DDK v2.1:
+
+	$ make clean
+	$ make
+
+	All the corresponding hex files would be generated.
+
+Downloading the Code
+====================
+
++ Get the DDK into bootloader mode. See details below.
++ Then, say for downloading blink_led.hex onto the DDK v2.1, do the following:
+
+	make TARGET=blink_led download
+
+	and then enjoy hacking.
+
+Getting DDK into Bootloader mode
+================================
+
++ For DDK v2.1
+	1. Connect the DDK to this computer with the USB cable provided along with it.
+	2. Switch on the DDK by pressing the power switch on the DDK.
+	3. Press the white DOWNLOAD & red RESET buttons together.
+	4. First release the RESET, and then the DOWNLOAD button.
+	5. If green PGM LED starts blinking, you are in the bootloader mode.
+	Otherwise, repeat the above sequence 3 to 5.
+

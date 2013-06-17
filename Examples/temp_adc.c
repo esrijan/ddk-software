@@ -7,9 +7,10 @@
  *
  * ATmega48/88/168, ATmega16/32
  * 
- * Sense & Measure temperature using an LM35, and display on the LCD
- * LM35 analog output is assumed to be connected to ADC0 (PA0) for analog to
- * digital conversion. 0V = 2C; and then every 10mV = 1C
+ * Sense & Measure temperature using an LM35, and display on the CLCD.
+ * LM35 analog output is assumed to be connected to ADC0 for analog to
+ * digital conversion. 0V = 2C; and then every 10mV = 1C.
+ * CLCD assumed to be connected as specified in the comments of clcd.c.
  */
 
 #include <avr/io.h>
@@ -45,7 +46,7 @@ void init_adc(void)
 	//ADCSRB = (0 < ADTS0); // Free running mode
 	// Enable & Start Conversion on the ADC // with Auto Trigger
 	ADCSRA |= (1 << ADEN) | (1 << ADSC); // | (1 << ADATE);
-	//DIDR0 = (1 << ADC0D); // Disable digital i/p on PA0 for lower power consumption
+	//DIDR0 = (1 << ADC0D); // Disable digital i/p on ADC0 for lower power consumption
 }
 
 int main(void)

@@ -18,8 +18,8 @@
  *	. PC5 -> XA0
  *	. PC6 -> XA1
  *	. PC7 -> PAGEL
- *	. PB5 -> BS2 (PB5 is exposed at Pin 4 of PGM-DB9 on DDK)
- *	. PB6 -> RESETb (PB6 is exposed at Pin 8 of PGM-DB9 on DDK)
+ *	. PB5 -> BS2 (PB5 is exposed at Pin 4 of PGM-DB9 on DDK v1.1)
+ *	. PB6 -> RESETb (PB6 is exposed at Pin 8 of PGM-DB9 on DDK v1.1)
  *	. PA <-> DATA
  * And a ~10K resistor between RESETb & +12V supply // TODO: This technique is not working
  */
@@ -27,6 +27,7 @@
 #include <avr/io.h>
 #include <util/delay.h>
 
+#include "ddk.h"
 #ifdef USE_CLCD
 #include "clcd.h"
 #endif
@@ -39,12 +40,13 @@
 #define TL_ON (PORTB |= TL) // Test LED On
 #define TL_OFF (PORTB &= ~TL) // Test LED Off
 #define TL_TOGGLE (PORTB ^= TL) // Test LED Toggle
-#define TS_PRESSED (!!(PINB & TS)) // Test Switch Pressed
+#define TS_PRESSED (BUTTON_PRESSED) // Test Switch Pressed
 
 void init_parallel_demo(void)
 {
 	// 1 = output, 0 = input
 	T_PORT |= TL;
+	BUTTON_INIT;
 	T_PORT &= ~TS;
 }
 

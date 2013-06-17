@@ -6,11 +6,13 @@
 # Licensed under: JSL (See LICENSE file for details)
 #
 
-# Before including this file, make sure that:
-# + OBJS is defined to the list of .o's to compile together
-# + TARGET is defined to the target name in which the .o's need to be compiled into
-# + Optionally, CHIP_NO. Otherwise, default is 168
-# + Optionally, F_CPU. Otherwise, default is 1000000 (1 MHz)
+# Before including this file in your main Makefile, make sure that:
+# 1. Either TARGET is defined to the final filename in which the code needs to
+# be compiled into, and ${TARGET}.elf: .o's dependencies are defined, Or,
+# 	The main Makefile defines its own rules for the target(s)
+# 2. In any case, the clean rule has to be defined by the main Makefile
+# 2. Optionally, CHIP_NO. Otherwise, default is 168
+# 3. Optionally, F_CPU. Otherwise, default is 1000000 (1 MHz)
 
 CROSS_COMPILE ?= avr-
 
@@ -111,7 +113,7 @@ LDFLAGS = -mmcu=${MCU}
 #  -Wl,...:   tell GCC to pass this to linker.
 #  -Map:      create map file
 #  --cref:    add cross reference to  map file
-LDFLAGS += -Wl,-Map=${TARGET}.map,--cref
+LDFLAGS += -Wl,-Map=$(@:.elf=.map),--cref
 LDFLAGS += -Wl,--relax,--gc-sections
 #LDFLAGS += -Wl,--section-start=.text=0x0
 
@@ -170,9 +172,6 @@ ifdef FUSE
 FUSELIST += fuse:w:${FUSE}:m
 endif
 
-all: ${TARGET}.hex
-#all: ${TARGET}.hex ${TARGET}.eep ${TARGET}.sym ${TARGET}.lss
-
 download: bootloadHID ${TARGET}.hex
 	sudo ./bootloadHID -r ${TARGET}.hex
 
@@ -206,7 +205,7 @@ shell:
 
 %.hex: %.elf
 	${OBJCOPY} -O ${FORMAT} -R .eeprom $< $@
-	#${OBJCOPY} -j .text -j .data -O ${FORMAT} $< $@
+#	${OBJCOPY} -j .text -j .data -O ${FORMAT} $< $@
 	${SIZE} $@
 
 %.eep: %.elf
@@ -219,7 +218,7 @@ shell:
 %.lss: %.elf
 	${OBJDUMP} -h -S $< > $@
 
-${TARGET}.elf: ${OBJS}
+%.elf:
 	${CC} $^ -o $@ ${LDFLAGS}
 
 %.S: %.c
@@ -227,11 +226,6 @@ ${TARGET}.elf: ${OBJS}
 
 allclean: clean
 	${RM} bootloadHID
-
-clean:
-	${RM} ${TARGET}.hex ${TARGET}.eep ${TARGET}.elf
-	${RM} ${TARGET}.lss ${TARGET}.sym ${TARGET}.map
-	${RM} *.o *.lst
 	${RM} -r .dep
 
 # Include the dependency files.

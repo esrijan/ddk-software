@@ -5,6 +5,8 @@
  *
  * Licensed under: JSL (See LICENSE file for details)
  *
+ * ATmega48/88/168, ATmega16/32
+ *
  * Header for Common Functions for ATmega48/88/168, ATmega16/32
  */
 
@@ -13,6 +15,6 @@
 
 #include <avr/io.h>
 
-extern void delay_us(uint16_t usecs);
-extern void delay_ms(uint16_t msecs);
+void delay_us(uint16_t usecs);
+void delay_ms(uint16_t msecs);
 #endif

@@ -11,6 +11,10 @@
  * set PB3 to LSB of character received
  *
  * Using LED at PB7 for debugging
+ *
+ * For trying this example on DDK's, make sure of the following:
+ * 	DDK v1.1: RX jumper should be on the left-most pin pair.
+ * 	DDK v2.1: Both RX-TX jumpers should be on the right-most pin pairs.
  */
 
 #include <avr/io.h>

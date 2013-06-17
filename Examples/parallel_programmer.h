@@ -5,6 +5,8 @@
  *
  * Licensed under: JSL (See LICENSE file for details)
  *
+ * ATmega16/32
+ *
  * Header for Parallel Programmer Functions for ATmega16/32 to program
  * any AVR uC
  */

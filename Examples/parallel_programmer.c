@@ -28,6 +28,7 @@
 #include <avr/io.h>
 #include <util/delay.h>
 
+#include "ddk.h"
 #include "parallel_programmer.h"
 #ifdef USE_CLCD
 #include "clcd.h"
@@ -89,6 +90,7 @@ void init_parallel_pgmer(void)
 	// PC1 <- RDY/BSYb = input; PA <-> DATA = both
 
 	DDRC |= (XTAL1 | OEb | WRb | BS1 | XA0 | XA1 | PAGEL);
+	BUTTON_INIT; // TODO
 	DDRB |= (BS2 | RESETb);
 	DDRC &= ~RDY_BSYb;
 	// DDRA aka DATA_CTL will be controlled as needed
@@ -251,7 +253,7 @@ static void program_page(void) /* Datasheet code: H & L */
 
 // TODO
 #define TS (1 << PB2) // Test Switch bit mask
-#define TS_PRESSED (!!(PINB & TS)) // Test Switch Pressed
+#define TS_PRESSED (BUTTON_PRESSED) // Test Switch Pressed
 static void read_switch() // This also is useful only w/ CLCD
 {
 	while (!TS_PRESSED)

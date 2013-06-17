@@ -5,6 +5,8 @@
  *
  * Licensed under: JSL (See LICENSE file for details)
  *
+ * ATmega48/88/168, ATmega16/32
+ *
  * Common Functions for ATmega48/88/168, ATmega16/32
  * 
  * Assumes definition of F_CPU as the processor frequency for delay_ms
@@ -16,7 +18,11 @@
 
 void internal_clock_calibration(unsigned long freq)
 {
-	/* TODO: Not tested &/or properly written */
+	/*
+	 * TODO: Not tested &/or properly written. Once done, possibly remove the
+	 * following line
+	 */
+	(void)(freq);
 	/*
 	 * Fundae:
 	 * Range = 7.3 MHz to 8.1 MHz
@@ -35,11 +41,11 @@ void internal_clock_calibration(unsigned long freq)
 void delay_us(uint16_t usecs)
 // As of tests, works best for F_CPU = 1MHz
 {
-	uint8_t x;
+	int8_t x;
 
 	for (; usecs > 0; usecs--)
 	{
-		for (x = 0; x < (F_CPU / 1000000) - 2; x++) // -2 for compensating the above for loop
+		for (x = 0; x < (int8_t)((F_CPU / 1000000) - 2); x++) // -2 for compensating the above for loop
 		{
 			asm volatile ("nop");
 		}

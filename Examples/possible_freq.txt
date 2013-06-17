@@ -1,3 +1,11 @@
+#
+# Copyright (C) eSrijan Innovations Private Limited
+#
+# Author: Anil Kumar Pugalia <anil_pugalia@eSrijan.com>
+#
+# Licensed under: JSL (See LICENSE file for details)
+#
+
 # Output of 
 # for ps in 1 8 32 64 128 256 1024; do echo -e "\nps = $ps"; for ocr2 in `seq 0 255`; do echo -n $((8000000 / $ps / (1 + $ocr2))); echo -n " "; done; done > possible_freq
 

@@ -5,7 +5,9 @@
  *
  * Licensed under: JSL (See LICENSE file for details)
  *
- * Character LCD Functions assuming the following for ATmega48/88/168, ATmega16/32:
+ * ATmega48/88/168, ATmega16/32
+ *
+ * Character LCD Functions assuming the following:
  * + PORTD is LCD Data Bus. PD0-7 for 8-bit & PD4-7 for 4-bit. Default is 8-bit
  * 	> Define CLCD_FOUR_BIT for 4-bit
  * + PB0: Enable; PB1: Register Select; Read/Write is GND (as not using READ). Otherwise, PB2
@@ -231,7 +233,7 @@ void clcd_init(void) // TODO: Pass Init Control Options
 	LCDCREG |= (CLCD_RS | CLCD_EN);
 
 	/*
-	 * The following 2 commands are typically not in the LCD datasheet, but
+	 * The following 2 commands are typically not in the CLCD datasheet, but
 	 * apparently are HD44780 standard
 	 */
 	clcd_cmd_wr(0x33);

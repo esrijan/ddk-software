@@ -16,6 +16,8 @@
 #include <avr/io.h>
 #include <util/delay.h>
 
+#include "ddk.h"
+
 //#define MANUAL
 #define HUMAN_AUDIBLE_MAX_FREQ 20000
 
@@ -29,6 +31,7 @@
 void init_io(void)
 {
 	// 1 = output, 0 = input
+	BUTTON_INIT;
 	DDRB &= ~(1 << PB2); // Set PB2 as input
 }
 void set_frequency(unsigned long freq)
@@ -72,10 +75,10 @@ int main(void)
 	while (1)
 	{
 #ifdef MANUAL
-		if (can_change_state && (PINB & (1 << PB2)))
+		if (can_change_state && (BUTTON_PRESSED))
 		{
 			_delay_ms(20);
-			if (PINB & (1 << PB2)) // debouncing check
+			if (BUTTON_PRESSED) // debouncing check
 			{
 				freq += (MAX_FREQ / 256);
 				if (freq > HUMAN_AUDIBLE_MAX_FREQ)
@@ -89,7 +92,7 @@ int main(void)
 		else
 		{
 			_delay_ms(20);
-			if (!(PINB & (1 << PB2))) // debouncing check
+			if (BUTTON_RELEASED) // debouncing check
 			{
 				can_change_state = 1;
 			}

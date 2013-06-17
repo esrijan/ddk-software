@@ -8,9 +8,11 @@
  * ATmega48/88/168, ATmega16/32
  * 
  * Detect light intensity using an LDR, and accordingly glow an LED.
+ * CLCD is used for extra info display.
  * Connection Vcc -- 470 ohms (R) -- LDR -- Gnd.
- * Using ADC0 (PA0) for analog voltage input at the junction of R & LDR
- * LED is connected to PB7
+ * Using ADC0 for analog voltage input at the junction of R & LDR.
+ * LED is connected to PB7.
+ * CLCD assumed to be connected as specified in the comments of clcd.c.
  */
 
 #include <avr/io.h>
@@ -46,7 +48,7 @@ void init_adc(void)
 	//ADCSRB = (0 < ADTS0); // Free running mode
 	// Enable & Start Conversion on the ADC // with Auto Trigger
 	ADCSRA |= (1 << ADEN) | (1 << ADSC); // | (1 << ADATE);
-	//DIDR0 = (1 << ADC0D); // Disable digital i/p on PA0 for lower power consumption
+	//DIDR0 = (1 << ADC0D); // Disable digital i/p on ADC0 for lower power consumption
 
 	// Enable LED pin as output on PB7 & switch it off by default
 	PORTB &= ~(1 << 7); // LED Off

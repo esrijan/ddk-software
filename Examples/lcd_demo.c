@@ -5,13 +5,17 @@
  *
  * Licensed under: JSL (See LICENSE file for details)
  *
- * Character LCD Demo with ATmega48/88/168, ATmega16/32
+ * ATmega48/88/168, ATmega16/32
+ *
+ * Character LCD Demo. CLCD assumed to be connected as specified in the comments
+ * of clcd.c. A switch connected on PB2 can provide extra demo.
  */
 
 #include <avr/io.h>
 #include <util/delay.h>
 #include <stdlib.h>
 
+#include "ddk.h"
 #include "clcd.h"
 
 #define NUM_MSGS 6
@@ -29,7 +33,8 @@ int main(void)
 	 */
 	//clcd_cmd_wr(0x0F); // All On: Cursor, Display, Blink. (nasty!)
 
-	if (PINB & (1 << 2))
+	BUTTON_INIT;
+	if (BUTTON_PRESSED)
 	{
 		while (1)
 		{

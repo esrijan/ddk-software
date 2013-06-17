@@ -5,9 +5,12 @@
  *
  * Licensed under: JSL (See LICENSE file for details)
  *
- * 'Hex Keypad interface with LCD' Demo with ATmega48/88/168, ATmega16/32
+ * ATmega16/32
  *
- * Hex Keypad has 16 keys: 0, 1, 2, 3, ...... , A, B, C, D, E, F.
+ * Hex Keypad interface with CLCD & EEPROM. CLCD assumed to be connected as
+ * specified in the comments of clcd.c.
+ *
+ * Keypad has 16 keys: 0, 1, 2, 3, ...... , A, B, C, D, E, F.
  */
 
 #include <avr/io.h>
