@@ -14,7 +14,7 @@ LEDTEST_BASE=${PWD}/`dirname $0`
 IDENTIFIER="-v 0x16c0 -p 0x05dc"
 SERIAL_PORT=/dev/ttyS0
 USBTOOL="${SUDO} ${USBTOOL_BASE}/usbtool ${IDENTIFIER}"
-LEDTEST="${LEDTEST_BASE}/led_array_test ${SERIAL_PORT}"
+LEDTEST="${SUDO} ${LEDTEST_BASE}/led_array_test ${SERIAL_PORT}"
 
 led_status()
 {
@@ -43,6 +43,10 @@ led_set()
 	fi
 }
 
+if [ ! -f ${USBTOOL_BASE}/usbtool ]
+then
+	make -C ${USBTOOL_BASE} usbtool
+fi
 if [ "$1" = "-l" ]
 then
 	echo "Connect the serial cable (on both sides) and start minicom."
@@ -92,6 +96,10 @@ done
 echo "Now quit minicom, switch off, set the RX-TX jumper pair towards B7, and repower."
 echo -n "Press <Enter> to check the led array on, off, and then alternating."
 read
+if [ ! -f ${LEDTEST_BASE}/led_array_test ]
+then
+	make -C ${LEDTEST_BASE} led_array_test
+fi
 ${LEDTEST}
 echo "Now switch off, set the RX-TX jumper pair towards B0, and remove the serial cable."
 echo "And finally, re-power and check for green led glowing & in /proc/bus/usb/devices."

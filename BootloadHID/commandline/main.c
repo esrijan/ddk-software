@@ -23,6 +23,7 @@
 
 /* ------------------------------------------------------------------------- */
 
+static int  version = 2;
 static char *ident_product_string = IDENT_PRODUCT_V2_STRING;
 static char dataBuffer[65536 + 256];    /* buffer for file data */
 static int  startAddress, endAddress;
@@ -233,8 +234,8 @@ char    *file = NULL;
         static struct option long_opts[] = {
             {"help", no_argument, NULL, 'h'},
             {"reset", no_argument, NULL, 'r'},
-            {"v1", no_argument, (int *)&ident_product_string, (int)IDENT_PRODUCT_V1_STRING},
-            {"v2", no_argument, (int *)&ident_product_string, (int)IDENT_PRODUCT_V2_STRING},
+            {"v1", no_argument, &version, 1},
+            {"v2", no_argument, &version, 2},
             {0, 0, 0, 0},
         };
         int opt_ind, c;
@@ -244,7 +245,10 @@ char    *file = NULL;
 
         switch (c){
             case 0: // v1 or v2
-                /* Action already taken */
+                if (version == 1)
+                    ident_product_string = IDENT_PRODUCT_V1_STRING;
+                else
+                    ident_product_string = IDENT_PRODUCT_V2_STRING;
                 break;
             case 'h':
                 printUsage(argv[0]);

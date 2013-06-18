@@ -1,0 +1,50 @@
+LDDKFirmware Code
+=================
+
+Firmware for Device Development Kit (DDK) to become a USB device for various
+Linux device driver experiments
+
+This project is released under the Juice Sharing License (See LICENSE file
+for details). This project have been derived from the open source vusb
+project @ http://www.obdev.at/products/vusb/
+
+This directory contains assembly & C source & header files of the firmware,
+along with the following:
+
++ README - this file
++ Readme.txt - the original readme of this project (no longer relevant)
++ Makefile - build controller of this firmware
++ create_package - used by Makefile to generate the upgrade_firmware utility
+
+Building the Firmware
+=====================
++ Without Character LCD support, type the following:
+
+	make mrproper
+	make
+
++ With Character LCD support, type the following:
+
+	make mrproper
+	make USE_CLCD=1
+
+Downloading the Firmware (Direct)
+========================
+For downloading the already built firmware, get the DDK into bootloader mode
+and then type the following:
+
+	make download
+
+NB Read the Examples/README to know how to get the DDK into bootloader mode
+
+Downloading the Firmware (Utility based)
+========================
++ Create the utility for downloading the already built firmware, by typing:
+
+	make package
+
++ Then, run the utility as follows, and follow its instructions:
+
+	./upgrade_firmware
+
+	NB You may need root privileges to run it

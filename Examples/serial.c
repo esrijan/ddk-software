@@ -49,14 +49,88 @@ static void set_baud(unsigned long baud)
 	UCSRA &= ~(1 << U2X);
 #endif
 }
+static void set_format(uint8_t data_bits, Parity parity, uint8_t stop_bits)
+{
+	uint8_t control = (1 << URSEL);
+
+	switch (data_bits)
+	{
+		case 5:
+			control |= (0b00 << UCSZ0);
+			// And, UCSRB &= ~(1 << UCSZ2);
+			break;
+		case 6:
+			control |= (0b01 << UCSZ0);
+			// And, UCSRB &= ~(1 << UCSZ2);
+			break;
+		case 7:
+			control |= (0b10 << UCSZ0);
+			// And, UCSRB &= ~(1 << UCSZ2);
+			break;
+		case 8:
+		default:
+			control |= (0b11 << UCSZ0);
+			// And, UCSRB &= ~(1 << UCSZ2);
+			break;
+		case 9:
+			control |= (0b11 << UCSZ0);
+			// And, UCSRB |= (1 << UCSZ2);
+			break;
+	}
+	switch (parity)
+	{
+		case p_none:
+		default:
+			control |= (0b00 << UPM0);
+			break;
+		case p_even:
+			control |= (0b10 << UPM0);
+			break;
+		case p_odd:
+			control |= (0b11 << UPM0);
+			break;
+	}
+	switch (stop_bits)
+	{
+		case 1:
+		default:
+			control |= (0b0 << USBS);
+			break;
+		case 2:
+			control |= (0b1 << USBS);
+			break;
+	}
+
+	if (data_bits == 9)
+		UCSRB |= (1 << UCSZ2);
+	else
+		UCSRB &= ~(1 << UCSZ2);
+	UCSRC = control;
+}
+
+void usart_enable(void)
+{
+	/* Enable receiver and transmitter */
+	UCSRB |= (1 << RXEN) | (1 << TXEN);
+}
+void usart_disable(void)
+{
+	/* Disable receiver and transmitter */
+	UCSRB &= ~((1 << RXEN) | (1 << TXEN));
+}
+
 void usart_init(unsigned long baud)
 {
 	set_baud(baud);
 
 	/* Default frame format: 8 data, No Parity, 1 stop bit (8N1) */
-	//UCSRC = (1 < URSEL) | (3 << UCSZ0);
-	/* Enable receiver and transmitter */
-	UCSRB = (1 << RXEN) | (1 << TXEN);
+	set_format(8, p_none, 1);
+
+	usart_enable();
+}
+void usart_shut(void)
+{
+	usart_disable();
 }
 
 void usart_byte_tx(uint8_t data)

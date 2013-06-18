@@ -578,7 +578,7 @@ uchar           isReset = !notResetState;
         wasReset = isReset;
     }
 #else
-	(void)(notResetState); // Not used
+    (void)(notResetState); // Not used
 #endif
 }
 
