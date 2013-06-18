@@ -20,16 +20,19 @@ DDK_VER ?= 2.1
 ifeq (${DDK_VER},2.1)
 CHIP_NO := 32
 F_CPU := 16000000
+BL_VER := --v2
 else
 ifeq (${DDK_VER},1.1)
 CHIP_NO := 16
 F_CPU := 16000000
+BL_VER := --v1
 else
 CHIP_NO := 168
 F_CPU := 1000000
 #F_CPU := 3686400
 #F_CPU := 7372800
 #F_CPU := 8000000
+BL_VER := # Defaults to --v2
 endif
 endif
 

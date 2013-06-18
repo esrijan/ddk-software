@@ -11,16 +11,19 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <getopt.h>
 #include <errno.h>
 #include "usbcalls.h"
 
 #define IDENT_VENDOR_NUM        0x16c0
 #define IDENT_VENDOR_STRING     "eSrijan Innovations Private Limited <eSrijan.com>"
 #define IDENT_PRODUCT_NUM       1503
-#define IDENT_PRODUCT_STRING    "HIDBoot v2.0"
+#define IDENT_PRODUCT_V1_STRING "HIDBoot"
+#define IDENT_PRODUCT_V2_STRING "HIDBoot v2.0"
 
 /* ------------------------------------------------------------------------- */
 
+static char *ident_product_string = IDENT_PRODUCT_V2_STRING;
 static char dataBuffer[65536 + 256];    /* buffer for file data */
 static int  startAddress, endAddress;
 static char leaveBootLoader = 0;
@@ -151,7 +154,7 @@ union{
     deviceData_t    data;
 }           buffer;
 
-    if((err = usbOpenDevice(&dev, IDENT_VENDOR_NUM, IDENT_VENDOR_STRING, IDENT_PRODUCT_NUM, IDENT_PRODUCT_STRING, 1)) != 0){
+    if((err = usbOpenDevice(&dev, IDENT_VENDOR_NUM, IDENT_VENDOR_STRING, IDENT_PRODUCT_NUM, ident_product_string, 1)) != 0){
         fprintf(stderr, "Error opening HIDBoot device: %s\n", usbErrorMessage(err));
         goto errorOccurred;
     }
@@ -215,7 +218,7 @@ errorOccurred:
 
 static void printUsage(char *pname)
 {
-    fprintf(stderr, "usage: %s [-r] [<intel-hexfile>]\n", pname);
+    fprintf(stderr, "usage: %s [-h|--help] | [--v1|--v2] [-r|--reset] [<intel-hexfile>]\n", pname);
 }
 
 int main(int argc, char **argv)
@@ -226,17 +229,42 @@ char    *file = NULL;
         printUsage(argv[0]);
         return 1;
     }
-    if(strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "--help") == 0){
+    while(1){
+        static struct option long_opts[] = {
+            {"help", no_argument, NULL, 'h'},
+            {"reset", no_argument, NULL, 'r'},
+            {"v1", no_argument, (int *)&ident_product_string, (int)IDENT_PRODUCT_V1_STRING},
+            {"v2", no_argument, (int *)&ident_product_string, (int)IDENT_PRODUCT_V2_STRING},
+            {0, 0, 0, 0},
+        };
+        int opt_ind, c;
+
+        if((c = getopt_long(argc, argv, "hr", long_opts, &opt_ind)) == -1)
+            break;
+
+        switch (c){
+            case 0: // v1 or v2
+                /* Action already taken */
+                break;
+            case 'h':
+                printUsage(argv[0]);
+                return 1;
+                break;
+            case 'r':
+                leaveBootLoader = 1;
+                break;
+            default:
+                printUsage(argv[0]);
+                return 1;
+                break;
+        }
+    }
+    if(optind < argc){
+        file = argv[optind++];
+    }
+    if(optind != argc){
         printUsage(argv[0]);
         return 1;
-    }
-    if(strcmp(argv[1], "-r") == 0){
-        leaveBootLoader = 1;
-        if(argc >= 3){
-            file = argv[2];
-        }
-    }else{
-        file = argv[1];
     }
     startAddress = sizeof(dataBuffer);
     endAddress = 0;

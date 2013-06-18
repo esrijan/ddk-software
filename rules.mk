@@ -173,7 +173,7 @@ FUSELIST += fuse:w:${FUSE}:m
 endif
 
 download: bootloadHID ${TARGET}.hex
-	sudo ./bootloadHID -r ${TARGET}.hex
+	sudo ./bootloadHID ${BL_VER} -r ${TARGET}.hex
 
 prepare: bootloadHID
 

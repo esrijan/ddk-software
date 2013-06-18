@@ -27,15 +27,38 @@ Compiling the Code
 
 	All the corresponding hex files would be generated.
 
++ To compile a particular example, say blink_led.hex, for DDK v2.1:
+
+	$ make blink_hex.hex
+
+	All the corresponding hex files would be generated.
+
++ To compile all the examples relevant for the older DDK v1.1:
+
+	$ make DDK_VER=1.1 clean
+	$ make DDK_VER=1.1
+
+	All the corresponding hex files would be generated.
+
 Downloading the Code
 ====================
 
 + Get the DDK into bootloader mode. See details below.
-+ Then, say for downloading blink_led.hex onto the DDK v2.1, do the following:
 
-	make TARGET=blink_led download
++ Then, for downloading a particular example, say blink_led.hex, onto the DDK,
+	do the following:
 
-	and then enjoy hacking.
+	. For DDK v2.1
+
+		make TARGET=blink_led download
+
+	. For DDK v1.1
+
+		make DDK_VER=1.1 TARGET=blink_led download
+
+		and then shift the BL jumper back to RX jumper
+
++ Enjoy hacking !!!
 
 Getting DDK into Bootloader mode
 ================================
@@ -48,3 +71,9 @@ Getting DDK into Bootloader mode
 	5. If green PGM LED starts blinking, you are in the bootloader mode.
 	Otherwise, repeat the above sequence 3 to 5.
 
++ For earlier DDK v1.1
+	1. Connect the DDK to this computer with the USB cable provided along with it.
+	2. Shift the RX jumper to BL jumper & then press the red RESET button.
+	3. Now, you most probably are in the bootloader mode.
+	Otherwise, power off / disconnect the DDK, and power / connect it again, and
+	you should be in the bootloader mode.
