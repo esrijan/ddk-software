@@ -20,9 +20,9 @@ BOOTLOADER_ADDRESS = 0x7000
 #BOOTLOADER_ADDRESS = 0x3800
 FWB_ADDRESS = 0x7780
 F_CPU = 16000000
-FUSEH = 0x88
-FUSEL = 0xff
-LOCK = 0x0f
+FUSEH = 0xC8
+FUSEL = 0xFF
+LOCK = 0x0F
 # Fuse high byte for ATMega8:
 # 0xc0 = 1 1 0 0   0 0 0 0 <-- BOOTRST (boot reset vector at 0x1800)
 #        ^ ^ ^ ^   ^ ^ ^------ BOOTSZ0
@@ -83,9 +83,9 @@ all:	main.hex
 .c.s:
 	$(COMPILE) -S $< -o $@
 
-prepare_udk: main.hex
+prepare_ddk: main.hex
 	$(AVRDUDE) -U flash:w:$<:i -U hfuse:w:$(FUSEH):m -U lfuse:w:$(FUSEL):m -U lock:w:$(LOCK):m
-	@echo "Check: hfuse ($(FUSEH)); lfuse ($(FUSEL)); lock (0x0f)"
+	@echo "Check: hfuse ($(FUSEH)); lfuse ($(FUSEL)); lock ($(LOCK))"
 	@echo "Possibly need to do a 'write lfuse 0 0xff'"
 	@echo "Open & Close the ZIF socket & then Do '$(AVRDUDE) -v -t' for that"
 

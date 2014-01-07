@@ -34,8 +34,17 @@ echo "4. First release the RESET, and then the DOWNLOAD button."
 echo "5. If green PGM LED starts blinking, press any key to proceed."
 echo "Otherwise, repeat the above sequence 3 to 5."
 read
-./bootloadHID -r ./usbdev.hex
+./bootloadHID -r ./usbdev.hex 2> /dev/null
 retval=\$?
+if [ \${retval} != 0 ]
+then
+	./bootloadHID --v2 -r ./usbdev.hex
+	retval=\$?
+	if [ \${retval} = 0 ]
+	then
+		echo "WARNING: Complete I/O access may need bootloader upgrade"
+	fi
+fi
 cd ..
 rm -fr ${out_dir}
 if [ \${retval} = 0 ]

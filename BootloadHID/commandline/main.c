@@ -18,13 +18,14 @@
 #define IDENT_VENDOR_NUM        0x16c0
 #define IDENT_VENDOR_STRING     "eSrijan Innovations Private Limited <eSrijan.com>"
 #define IDENT_PRODUCT_NUM       1503
-#define IDENT_PRODUCT_V1_STRING "HIDBoot"
-#define IDENT_PRODUCT_V2_STRING "HIDBoot v2.0"
+#define IDENT_PRODUCT_V10_STRING "HIDBoot"
+#define IDENT_PRODUCT_V20_STRING "HIDBoot v2.0"
+#define IDENT_PRODUCT_V21_STRING "HIDBoot v2.1"
 
 /* ------------------------------------------------------------------------- */
 
-static int  version = 2;
-static char *ident_product_string = IDENT_PRODUCT_V2_STRING;
+static int  version = 21;
+static char *ident_product_string = IDENT_PRODUCT_V21_STRING;
 static char dataBuffer[65536 + 256];    /* buffer for file data */
 static int  startAddress, endAddress;
 static char leaveBootLoader = 0;
@@ -234,8 +235,9 @@ char    *file = NULL;
         static struct option long_opts[] = {
             {"help", no_argument, NULL, 'h'},
             {"reset", no_argument, NULL, 'r'},
-            {"v1", no_argument, &version, 1},
-            {"v2", no_argument, &version, 2},
+            {"v1", no_argument, &version, 10},
+            {"v2", no_argument, &version, 20},
+            {"v2.1", no_argument, &version, 21},
             {0, 0, 0, 0},
         };
         int opt_ind, c;
@@ -244,11 +246,13 @@ char    *file = NULL;
             break;
 
         switch (c){
-            case 0: // v1 or v2
-                if (version == 1)
-                    ident_product_string = IDENT_PRODUCT_V1_STRING;
-                else
-                    ident_product_string = IDENT_PRODUCT_V2_STRING;
+            case 0: // v1 or v2 or v2.1
+                if (version == 10)
+                    ident_product_string = IDENT_PRODUCT_V10_STRING;
+                else if (version == 20)
+                    ident_product_string = IDENT_PRODUCT_V20_STRING;
+                else // if (version == 21)
+                    ident_product_string = IDENT_PRODUCT_V21_STRING;
                 break;
             case 'h':
                 printUsage(argv[0]);
