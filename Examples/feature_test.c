@@ -74,6 +74,7 @@ int main(void)
 
 	usart_byte_rx(); // Waiting for a character, typically an <Enter>
 	usart_tx("Welcome to eSrijan's DDK v2.1 tester\n");
+	usart_tx("Press BUTTON\n");
 
 	while (1)
 	{
@@ -141,10 +142,11 @@ int main(void)
 				if (rtc_set(y, mo, d, dy, h, m, s) == 0)
 				{
 					usart_tx("RTC time set.\n");
+					usart_tx("Now, poweroff & on to check battery.\n");
 				}
 				else
 				{
-						usart_tx("RTC read error.\n");
+					usart_tx("RTC read error.\n");
 				}
 				break;
 			case '3':
