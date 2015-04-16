@@ -10,7 +10,7 @@ DDKSW_BASE := ../..
 
 #USE_CLCD := 1
 
-FW_VER := 2.1
+FW_VER := 2.2
 
 CHIP_NO := 32
 #CHIP_NO := 16

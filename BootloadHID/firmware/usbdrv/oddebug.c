@@ -20,7 +20,7 @@ static void uartPutc(char c)
     ODDBG_UDR = c;
 }
 
-static uchar    hexAscii(uchar h)
+static uchar hexAscii(uchar h)
 {
     h &= 0xf;
     if(h >= 10)
@@ -35,7 +35,7 @@ static void printHex(uchar c)
     uartPutc(hexAscii(c));
 }
 
-void    odDebug(uchar prefix, uchar *data, uchar len)
+void odDebug(uchar prefix, uchar *data, uchar len)
 {
     printHex(prefix);
     uartPutc(':');

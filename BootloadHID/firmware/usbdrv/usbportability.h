@@ -31,7 +31,7 @@ Thanks to Oleg Semyonov for his help with the IAR tools port!
 /* ------------------------------------------------------------------------- */
 
 #ifndef ENABLE_BIT_DEFINITIONS
-#   define ENABLE_BIT_DEFINITIONS	1   /* Enable bit definitions */
+#   define ENABLE_BIT_DEFINITIONS 1 /* Enable bit definitions */
 #endif
 
 /* Include IAR headers */
@@ -52,7 +52,7 @@ Thanks to Oleg Semyonov for his help with the IAR tools port!
 #   define PROGMEM __flash
 #endif
 
-#define USB_READ_FLASH(addr)    (*(PROGMEM char *)(addr))
+#define USB_READ_FLASH(addr)    (*(const PROGMEM char *)(addr))
 
 /* The following definitions are not needed by the driver, but may be of some
  * help if you port a gcc based project to IAR.
@@ -94,7 +94,7 @@ Thanks to Oleg Semyonov for his help with the IAR tools port!
 #define __attribute__(arg)  /* not supported on IAR */
 
 #define PROGMEM                 __flash
-#define USB_READ_FLASH(addr)    (*(PROGMEM char *)(addr))
+#define USB_READ_FLASH(addr)    (*(const PROGMEM char *)(addr))
 
 #ifndef __ASSEMBLER__
 static inline void  cli(void)
@@ -123,10 +123,11 @@ static inline void  sei(void)
 #   define _VECTOR(N)   __vector_ ## N   /* io.h does not define this for asm */
 #else
 #   include <avr/pgmspace.h>
+#   include "usbconfig.h" /* Make sure to have USB_CFG_DRIVER_FLASH_PAGE */
 #endif
 
 #if USB_CFG_DRIVER_FLASH_PAGE
-#   define USB_READ_FLASH(addr)    pgm_read_byte_far(((long)USB_CFG_DRIVER_FLASH_PAGE << 16) | (long)(addr))
+#   define USB_READ_FLASH(addr)    pgm_read_byte_far(((long)USB_CFG_DRIVER_FLASH_PAGE << 16) | (long)(int)(addr))
 #else
 #   define USB_READ_FLASH(addr)    pgm_read_byte(addr)
 #endif

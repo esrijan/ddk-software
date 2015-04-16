@@ -91,6 +91,13 @@ the newest features and options.
  * of the macros usbDisableAllRequests() and usbEnableAllRequests() in
  * usbdrv.h.
  */
+#ifndef TEST_MODE
+#define USB_CFG_DRIVER_FLASH_PAGE       0
+/* If the device has more than 64 kBytes of flash, define this to the 64 k page
+ * where the driver's constants (descriptors) are located. Or in other words:
+ * Define this to 1 for boot loaders on the ATMega128.
+ */
+#endif
 #define TIMER0_PRESCALING           64 /* must match the configuration for TIMER0 in main */
 #define TOLERATED_DEVIATION_PPT     5  /* max clock deviation before we tune in 1/10 % */
 /* derived constants: */
@@ -156,7 +163,7 @@ tuningOverflow:
  * you use obdev's free shared VID/PID pair. Be sure to read the rules in
  * USBID-License.txt!
  */
-#define USB_CFG_DEVICE_VERSION  0x10, 0x02
+#define USB_CFG_DEVICE_VERSION  0x20, 0x02
 /* Version number of the device: Minor number first, then major number.
  */
 #define USB_CFG_VENDOR_NAME     'e', 'S', 'r', 'i', 'j', 'a', 'n', ' ', 'I', 'n', 'n', 'o', 'v', 'a', 't', 'i', 'o', 'n', 's', ' ', 'P', 'r', 'i', 'v', 'a', 't', 'e', ' ', 'L', 'i', 'm', 'i', 't', 'e', 'd', ' ', '<', 'e', 'S', 'r', 'i', 'j', 'a', 'n', '.', 'c', 'o', 'm', '>'
@@ -169,7 +176,7 @@ tuningOverflow:
  * obdev's free shared VID/PID pair. See the file USBID-License.txt for
  * details.
  */
-#define USB_CFG_DEVICE_NAME     'H', 'I', 'D', 'B', 'o', 'o', 't', ' ', 'v', '2', '.', '1'
+#define USB_CFG_DEVICE_NAME     'H', 'I', 'D', 'B', 'o', 'o', 't', ' ', 'v', '2', '.', '2'
 #define USB_CFG_DEVICE_NAME_LEN 12
 /* Same as above for the device name. If you don't want a device name, undefine
  * the macros. See the file USBID-License.txt before you assign a name if you
@@ -215,7 +222,7 @@ tuningOverflow:
  *   + USB_PROP_LENGTH(len): If the data is in static memory (RAM or flash),
  *     the driver must know the descriptor's length. The descriptor itself is
  *     found at the address of a well known identifier (see below).
- * List of static descriptor names (must be declared PROGMEM if in flash):
+ * List of static descriptor names (must be declared const PROGMEM if in flash):
  *   char usbDescriptorDevice[];
  *   char usbDescriptorConfiguration[];
  *   char usbDescriptorHidReport[];
@@ -263,11 +270,20 @@ tuningOverflow:
  * interrupt than INT0, you may have to define some of these.
  */
 /* #define USB_INTR_CFG            MCUCR */
-/* #define USB_INTR_CFG_SET        ((1 << ISC00) | (1 << ISC01)) */
+/*
+#if defined(USB_COUNT_SOF) || defined(USB_SOF_HOOK)
+#define USB_INTR_CFG_SET (1 << ISC01) // cfg for falling edge
+// If any SOF logic is used, the interrupt must be wired to D- where
+// we better trigger on falling edge
+#else
+#define USB_INTR_CFG_SET ((1 << ISC00) | (1 << ISC01)) // cfg for rising edge
+#endif
+ */
 /* #define USB_INTR_CFG_CLR        0 */
 /* #define USB_INTR_ENABLE         GIMSK */
 /* #define USB_INTR_ENABLE_BIT     INT0 */
 /* #define USB_INTR_PENDING        GIFR */
 /* #define USB_INTR_PENDING_BIT    INTF0 */
+/* #define USB_INTR_VECTOR         INT0_vect */
 
 #endif /* __usbconfig_h_included__ */

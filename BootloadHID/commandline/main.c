@@ -21,11 +21,12 @@
 #define IDENT_PRODUCT_V10_STRING "HIDBoot"
 #define IDENT_PRODUCT_V20_STRING "HIDBoot v2.0"
 #define IDENT_PRODUCT_V21_STRING "HIDBoot v2.1"
+#define IDENT_PRODUCT_V22_STRING "HIDBoot v2.2"
 
 /* ------------------------------------------------------------------------- */
 
-static int  version = 21;
-static char *ident_product_string = IDENT_PRODUCT_V21_STRING;
+static int  version = 22;
+static char *ident_product_string = IDENT_PRODUCT_V22_STRING;
 static char dataBuffer[65536 + 256];    /* buffer for file data */
 static int  startAddress, endAddress;
 static char leaveBootLoader = 0;
@@ -220,7 +221,7 @@ errorOccurred:
 
 static void printUsage(char *pname)
 {
-    fprintf(stderr, "usage: %s [-h|--help] | [--v1|--v2] [-r|--reset] [<intel-hexfile>]\n", pname);
+    fprintf(stderr, "usage: %s [-h|--help] | [--v1|--v2|--v2.1|--v2.2] [-r|--reset] [<intel-hexfile>]\n", pname);
 }
 
 int main(int argc, char **argv)
@@ -238,6 +239,7 @@ char    *file = NULL;
             {"v1", no_argument, &version, 10},
             {"v2", no_argument, &version, 20},
             {"v2.1", no_argument, &version, 21},
+            {"v2.2", no_argument, &version, 22},
             {0, 0, 0, 0},
         };
         int opt_ind, c;
@@ -246,13 +248,15 @@ char    *file = NULL;
             break;
 
         switch (c){
-            case 0: // v1 or v2 or v2.1
+            case 0: // v1 or v2 or v2.1 or v2.2
                 if (version == 10)
                     ident_product_string = IDENT_PRODUCT_V10_STRING;
                 else if (version == 20)
                     ident_product_string = IDENT_PRODUCT_V20_STRING;
-                else // if (version == 21)
+                else if (version == 21)
                     ident_product_string = IDENT_PRODUCT_V21_STRING;
+                else if (version == 22)
+                    ident_product_string = IDENT_PRODUCT_V22_STRING;
                 break;
             case 'h':
                 printUsage(argv[0]);
@@ -292,5 +296,3 @@ char    *file = NULL;
 }
 
 /* ------------------------------------------------------------------------- */
-
-

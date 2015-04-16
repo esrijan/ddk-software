@@ -132,6 +132,10 @@ static inline void  bootLoaderShut(void)
     DL_PORT_PULLUP &= ~_BV(DL_BIT);  /* Reset / De-activate pull-up for key */
     LED_PORT_OUTPUT &= ~_BV(LED_BIT);/* Switch off LED before stopping */
     LED_PORT_DDR &= ~_BV(LED_BIT);   /* Reset the LED bit to default input state */
+
+    /* Would like to keep the JTAG disabled, when running application */
+    MCUCSR |= (1 << JTD);            /* Soft Disable JTAG */
+    MCUCSR |= (1 << JTD);            /* Confirm to Soft Disable JTAG */
 }
 
 #define bootLoaderCondition() ((DL_PORT_INPUT & _BV(DL_BIT)) == 0) /* True if switch is pressed */

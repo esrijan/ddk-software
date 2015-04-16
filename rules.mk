@@ -191,14 +191,18 @@ erase:
 read:
 	${AVRDUDE} ${AVRDUDEFLAGS} -U flash:r:${TARGET}.rd.hex:i
 
+ifdef FUSELIST
 burnfuse:
 	${AVRDUDE} ${AVRDUDEFLAGS} $(addprefix -U , ${FUSELIST})
+endif
 
 #readfuse:
 #	${AVRDUDE} ${AVRDUDEFLAGS} -U hfuse:r:-:m -U lfuse:r:-:m
 
+ifdef LOCK
 lock:
 	${AVRDUDE} ${AVRDUDEFLAGS} -U lock:w:${LOCK}:m
+endif
 
 shell:
 	${AVRDUDE} -v ${AVRDUDEFLAGS} -t

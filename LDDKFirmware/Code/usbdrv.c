@@ -67,7 +67,7 @@ optimizing hints:
 #if USB_CFG_DESCR_PROPS_STRING_0 == 0
 #undef USB_CFG_DESCR_PROPS_STRING_0
 #define USB_CFG_DESCR_PROPS_STRING_0    sizeof(usbDescriptorString0)
-PROGMEM char usbDescriptorString0[] = { /* language descriptor */
+const PROGMEM char usbDescriptorString0[] = { /* language descriptor */
     4,          /* sizeof(usbDescriptorString0): length of descriptor in bytes */
     3,          /* descriptor type */
     0x09, 0x04, /* language index (0x0409 = US-English) */
@@ -77,7 +77,7 @@ PROGMEM char usbDescriptorString0[] = { /* language descriptor */
 #if USB_CFG_DESCR_PROPS_STRING_VENDOR == 0 && USB_CFG_VENDOR_NAME_LEN
 #undef USB_CFG_DESCR_PROPS_STRING_VENDOR
 #define USB_CFG_DESCR_PROPS_STRING_VENDOR   sizeof(usbDescriptorStringVendor)
-PROGMEM int  usbDescriptorStringVendor[] = {
+const PROGMEM int  usbDescriptorStringVendor[] = {
     USB_STRING_DESCRIPTOR_HEADER(USB_CFG_VENDOR_NAME_LEN),
     USB_CFG_VENDOR_NAME
 };
@@ -86,7 +86,7 @@ PROGMEM int  usbDescriptorStringVendor[] = {
 #if USB_CFG_DESCR_PROPS_STRING_PRODUCT == 0 && USB_CFG_DEVICE_NAME_LEN
 #undef USB_CFG_DESCR_PROPS_STRING_PRODUCT
 #define USB_CFG_DESCR_PROPS_STRING_PRODUCT   sizeof(usbDescriptorStringDevice)
-PROGMEM int  usbDescriptorStringDevice[] = {
+const PROGMEM int  usbDescriptorStringDevice[] = {
     USB_STRING_DESCRIPTOR_HEADER(USB_CFG_DEVICE_NAME_LEN),
     USB_CFG_DEVICE_NAME
 };
@@ -95,7 +95,7 @@ PROGMEM int  usbDescriptorStringDevice[] = {
 #if USB_CFG_DESCR_PROPS_STRING_SERIAL_NUMBER == 0 && USB_CFG_SERIAL_NUMBER_LEN
 #undef USB_CFG_DESCR_PROPS_STRING_SERIAL_NUMBER
 #define USB_CFG_DESCR_PROPS_STRING_SERIAL_NUMBER    sizeof(usbDescriptorStringSerialNumber)
-PROGMEM int usbDescriptorStringSerialNumber[] = {
+const PROGMEM int usbDescriptorStringSerialNumber[] = {
     USB_STRING_DESCRIPTOR_HEADER(USB_CFG_SERIAL_NUMBER_LEN),
     USB_CFG_SERIAL_NUMBER
 };
@@ -108,7 +108,7 @@ PROGMEM int usbDescriptorStringSerialNumber[] = {
 #if USB_CFG_DESCR_PROPS_DEVICE == 0
 #undef USB_CFG_DESCR_PROPS_DEVICE
 #define USB_CFG_DESCR_PROPS_DEVICE  sizeof(usbDescriptorDevice)
-PROGMEM char usbDescriptorDevice[] = {    /* USB device descriptor */
+const PROGMEM char usbDescriptorDevice[] = {    /* USB device descriptor */
     18,         /* sizeof(usbDescriptorDevice): length of descriptor in bytes */
     USBDESCR_DEVICE,        /* descriptor type */
     0x10, 0x01,             /* USB version supported */
@@ -139,14 +139,16 @@ PROGMEM char usbDescriptorDevice[] = {    /* USB device descriptor */
 #if USB_CFG_DESCR_PROPS_CONFIGURATION == 0
 #undef USB_CFG_DESCR_PROPS_CONFIGURATION
 #define USB_CFG_DESCR_PROPS_CONFIGURATION   sizeof(usbDescriptorConfiguration)
-PROGMEM char usbDescriptorConfiguration[] = {    /* USB configuration descriptor */
+const PROGMEM char usbDescriptorConfiguration[] = {    /* USB configuration descriptor */
     9,          /* sizeof(usbDescriptorConfiguration): length of descriptor in bytes */
     USBDESCR_CONFIG,    /* descriptor type */
-    18 + 7 * USB_CFG_HAVE_INTRIN_ENDPOINT + 7 * USB_CFG_HAVE_INTRIN_ENDPOINT3
+    9 /* Config Descriptor size */
+       + 9 * (1 + USB_CFG_HAVE_INTERFACE1 + USB_CFG_HAVE_INTERFACE2)
+       + 7 * USB_CFG_HAVE_INTRIN_ENDPOINT + 7 * USB_CFG_HAVE_INTRIN_ENDPOINT3
        + 7 * USB_CFG_HAVE_INTROUT_ENDPOINT + 7 * USB_CFG_HAVE_INTROUT_ENDPOINT3
        + (USB_CFG_DESCR_PROPS_HID & 0xff), 0,
                 /* total length of data returned (including inlined descriptors) */
-    1,          /* number of interfaces in this configuration */
+    3,          /* number of interfaces in this configuration */
     1,          /* index of this configuration */
     0,          /* configuration name string index */
 #if USB_CFG_IS_SELF_POWERED
@@ -161,8 +163,7 @@ PROGMEM char usbDescriptorConfiguration[] = {    /* USB configuration descriptor
     0,          /* index of this interface */
     0,          /* alternate setting for this interface */
     /* endpoints excl 0: number of endpoint descriptors to follow */
-    USB_CFG_HAVE_INTRIN_ENDPOINT + USB_CFG_HAVE_INTRIN_ENDPOINT3 +
-        USB_CFG_HAVE_INTROUT_ENDPOINT + USB_CFG_HAVE_INTROUT_ENDPOINT3,
+    USB_CFG_HAVE_INTRIN_ENDPOINT + USB_CFG_HAVE_INTROUT_ENDPOINT,
     USB_CFG_INTERFACE_CLASS,
     USB_CFG_INTERFACE_SUBCLASS,
     USB_CFG_INTERFACE_PROTOCOL,
@@ -184,18 +185,31 @@ PROGMEM char usbDescriptorConfiguration[] = {    /* USB configuration descriptor
     8, 0,       /* maximum packet size */
     USB_CFG_INTR_POLL_INTERVAL, /* in ms */
 #endif
-#if USB_CFG_HAVE_INTRIN_ENDPOINT3   /* endpoint descriptor for in endpoint 3 */
-    7,          /* sizeof(usbDescrEndpoint) */
-    USBDESCR_ENDPOINT,  /* descriptor type = endpoint */
-    (char)(0x80 | USB_CFG_EP3_NUMBER), /* IN endpoint number 3 */
-    0x03,       /* attrib: Interrupt endpoint */
-    8, 0,       /* maximum packet size */
-    USB_CFG_INTR_POLL_INTERVAL, /* in ms */
-#endif
 #if USB_CFG_HAVE_INTROUT_ENDPOINT   /* endpoint descriptor for out endpoint 1 */
     7,          /* sizeof(usbDescrEndpoint) */
     USBDESCR_ENDPOINT,  /* descriptor type = endpoint */
     (char)0x01, /* OUT endpoint number 1 */
+    0x03,       /* attrib: Interrupt endpoint */
+    8, 0,       /* maximum packet size */
+    USB_CFG_INTR_POLL_INTERVAL, /* in ms */
+#endif
+#if USB_CFG_HAVE_INTERFACE1
+/* interface descriptor follows inline: */
+    9,          /* sizeof(usbDescrInterface): length of descriptor in bytes */
+    USBDESCR_INTERFACE, /* descriptor type */
+    1,          /* index of this interface */
+    0,          /* alternate setting for this interface */
+    /* endpoints excl 0: number of endpoint descriptors to follow */
+    USB_CFG_HAVE_INTRIN_ENDPOINT3 + USB_CFG_HAVE_INTROUT_ENDPOINT3,
+    USB_CFG_INTERFACE_CLASS,
+    USB_CFG_INTERFACE_SUBCLASS,
+    USB_CFG_INTERFACE_PROTOCOL,
+    0,          /* string index for interface */
+#endif
+#if USB_CFG_HAVE_INTRIN_ENDPOINT3   /* endpoint descriptor for in endpoint 3 */
+    7,          /* sizeof(usbDescrEndpoint) */
+    USBDESCR_ENDPOINT,  /* descriptor type = endpoint */
+    (char)(0x80 | USB_CFG_EP3_NUMBER), /* IN endpoint number 3 */
     0x03,       /* attrib: Interrupt endpoint */
     8, 0,       /* maximum packet size */
     USB_CFG_INTR_POLL_INTERVAL, /* in ms */
@@ -207,6 +221,19 @@ PROGMEM char usbDescriptorConfiguration[] = {    /* USB configuration descriptor
     0x03,       /* attrib: Interrupt endpoint */
     8, 0,       /* maximum packet size */
     USB_CFG_INTR_POLL_INTERVAL, /* in ms */
+#endif
+#if USB_CFG_HAVE_INTERFACE2
+/* interface descriptor follows inline: */
+    9,          /* sizeof(usbDescrInterface): length of descriptor in bytes */
+    USBDESCR_INTERFACE, /* descriptor type */
+    2,          /* index of this interface */
+    0,          /* alternate setting for this interface */
+    /* endpoints excl 0: number of endpoint descriptors to follow */
+    0,
+    USB_CFG_INTERFACE_CLASS,
+    USB_CFG_INTERFACE_SUBCLASS,
+    USB_CFG_INTERFACE_PROTOCOL,
+    0,          /* string index for interface */
 #endif
 };
 #endif

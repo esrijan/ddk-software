@@ -87,6 +87,10 @@ section at the end of this file).
  */
 #define USB_CFG_HAVE_INTROUT_ENDPOINT   1
 #define USB_CFG_HAVE_INTROUT_ENDPOINT3   1
+#define USB_CFG_HAVE_INTERFACE1 1
+/* Define this to 1 if you want to compile a version with interface 1 */
+#define USB_CFG_HAVE_INTERFACE2 1
+/* Define this to 1 if you want to compile a version with interface 2 */
 /* #define USB_INITIAL_DATATOKEN           USBPID_DATA1 */
 /* The above macro defines the startup condition for data toggling on the
  * interrupt/bulk endpoints 1 and 3. Defaults to USBPID_DATA1.
@@ -248,7 +252,7 @@ section at the end of this file).
  * obdev's free shared VID/PID pair. See the file USB-IDs-for-free.txt for
  * details.
  */
-#define USB_CFG_DEVICE_NAME     'D', 'e', 'v', 'i', 'c', 'e', ' ', 'D', 'r', 'i', 'v', 'e', 'r', ' ', 'K', 'i', 't', ' ', '(', 'f', 'w', ' ', 'v', '2', '.', '1', ')'
+#define USB_CFG_DEVICE_NAME     'D', 'e', 'v', 'i', 'c', 'e', ' ', 'D', 'r', 'i', 'v', 'e', 'r', ' ', 'K', 'i', 't', ' ', '(', 'f', 'w', ' ', 'v', '2', '.', '2', ')'
 #define USB_CFG_DEVICE_NAME_LEN 27
 /* Same as above for the device name. If you don't want a device name, undefine
  * the macros. See the file USB-IDs-for-free.txt before you assign a name if
@@ -263,12 +267,12 @@ section at the end of this file).
  * to fine tune control over USB descriptors such as the string descriptor
  * for the serial number.
  */
-#define USB_CFG_DEVICE_CLASS        0xff    /* set to 0 if deferred to interface */
+#define USB_CFG_DEVICE_CLASS        0    /* set to 0 if deferred to interface */
 #define USB_CFG_DEVICE_SUBCLASS     0
 /* See USB specification if you want to conform to an existing device class.
  * Class 0xff is "vendor specific".
  */
-#define USB_CFG_INTERFACE_CLASS     0   /* define class here if not at device level */
+#define USB_CFG_INTERFACE_CLASS     0xff   /* define class here if not at device level */
 #define USB_CFG_INTERFACE_SUBCLASS  0
 #define USB_CFG_INTERFACE_PROTOCOL  0
 /* See USB specification if you want to conform to an existing device class or
@@ -367,6 +371,6 @@ section at the end of this file).
 /* #define USB_INTR_ENABLE_BIT     INT0 */
 /* #define USB_INTR_PENDING        GIFR */
 /* #define USB_INTR_PENDING_BIT    INTF0 */
-/* #define USB_INTR_VECTOR         SIG_INTERRUPT0 */
+/* #define USB_INTR_VECTOR         INT0_vect */
 
 #endif /* __usbconfig_h_included__ */

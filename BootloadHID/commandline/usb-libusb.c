@@ -168,8 +168,6 @@ int bytesSent;
     }
     bytesSent = usb_control_msg(device, USB_TYPE_CLASS | USB_RECIP_INTERFACE | USB_ENDPOINT_OUT, USBRQ_HID_SET_REPORT, reportType << 8 | buffer[0], 0, buffer, len, 5000);
     if(bytesSent != len){
-        if(bytesSent < 0)
-            fprintf(stderr, "Error sending message: %s\n", usb_strerror());
         return USB_ERROR_IO;
     }
     return 0;
@@ -187,7 +185,6 @@ int bytesReceived, maxLen = *len;
     }
     bytesReceived = usb_control_msg(device, USB_TYPE_CLASS | USB_RECIP_INTERFACE | USB_ENDPOINT_IN, USBRQ_HID_GET_REPORT, reportType << 8 | reportNumber, 0, buffer, maxLen, 5000);
     if(bytesReceived < 0){
-        fprintf(stderr, "Error sending message: %s\n", usb_strerror());
         return USB_ERROR_IO;
     }
     *len = bytesReceived;

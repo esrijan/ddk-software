@@ -67,7 +67,7 @@ optimizing hints:
 #if USB_CFG_DESCR_PROPS_STRING_0 == 0
 #undef USB_CFG_DESCR_PROPS_STRING_0
 #define USB_CFG_DESCR_PROPS_STRING_0    sizeof(usbDescriptorString0)
-PROGMEM char usbDescriptorString0[] = { /* language descriptor */
+const PROGMEM char usbDescriptorString0[] = { /* language descriptor */
     4,          /* sizeof(usbDescriptorString0): length of descriptor in bytes */
     3,          /* descriptor type */
     0x09, 0x04, /* language index (0x0409 = US-English) */
@@ -77,7 +77,7 @@ PROGMEM char usbDescriptorString0[] = { /* language descriptor */
 #if USB_CFG_DESCR_PROPS_STRING_VENDOR == 0 && USB_CFG_VENDOR_NAME_LEN
 #undef USB_CFG_DESCR_PROPS_STRING_VENDOR
 #define USB_CFG_DESCR_PROPS_STRING_VENDOR   sizeof(usbDescriptorStringVendor)
-PROGMEM int  usbDescriptorStringVendor[] = {
+const PROGMEM int usbDescriptorStringVendor[] = {
     USB_STRING_DESCRIPTOR_HEADER(USB_CFG_VENDOR_NAME_LEN),
     USB_CFG_VENDOR_NAME
 };
@@ -86,7 +86,7 @@ PROGMEM int  usbDescriptorStringVendor[] = {
 #if USB_CFG_DESCR_PROPS_STRING_PRODUCT == 0 && USB_CFG_DEVICE_NAME_LEN
 #undef USB_CFG_DESCR_PROPS_STRING_PRODUCT
 #define USB_CFG_DESCR_PROPS_STRING_PRODUCT   sizeof(usbDescriptorStringDevice)
-PROGMEM int  usbDescriptorStringDevice[] = {
+const PROGMEM int usbDescriptorStringDevice[] = {
     USB_STRING_DESCRIPTOR_HEADER(USB_CFG_DEVICE_NAME_LEN),
     USB_CFG_DEVICE_NAME
 };
@@ -95,7 +95,7 @@ PROGMEM int  usbDescriptorStringDevice[] = {
 #if USB_CFG_DESCR_PROPS_STRING_SERIAL_NUMBER == 0 && USB_CFG_SERIAL_NUMBER_LEN
 #undef USB_CFG_DESCR_PROPS_STRING_SERIAL_NUMBER
 #define USB_CFG_DESCR_PROPS_STRING_SERIAL_NUMBER    sizeof(usbDescriptorStringSerialNumber)
-PROGMEM int usbDescriptorStringSerialNumber[] = {
+const PROGMEM int usbDescriptorStringSerialNumber[] = {
     USB_STRING_DESCRIPTOR_HEADER(USB_CFG_SERIAL_NUMBER_LEN),
     USB_CFG_SERIAL_NUMBER
 };
@@ -108,7 +108,7 @@ PROGMEM int usbDescriptorStringSerialNumber[] = {
 #if USB_CFG_DESCR_PROPS_DEVICE == 0
 #undef USB_CFG_DESCR_PROPS_DEVICE
 #define USB_CFG_DESCR_PROPS_DEVICE  sizeof(usbDescriptorDevice)
-PROGMEM char usbDescriptorDevice[] = {    /* USB device descriptor */
+const PROGMEM char usbDescriptorDevice[] = {    /* USB device descriptor */
     18,         /* sizeof(usbDescriptorDevice): length of descriptor in bytes */
     USBDESCR_DEVICE,        /* descriptor type */
     0x10, 0x01,             /* USB version supported */
@@ -139,7 +139,7 @@ PROGMEM char usbDescriptorDevice[] = {    /* USB device descriptor */
 #if USB_CFG_DESCR_PROPS_CONFIGURATION == 0
 #undef USB_CFG_DESCR_PROPS_CONFIGURATION
 #define USB_CFG_DESCR_PROPS_CONFIGURATION   sizeof(usbDescriptorConfiguration)
-PROGMEM char usbDescriptorConfiguration[] = {    /* USB configuration descriptor */
+const PROGMEM char usbDescriptorConfiguration[] = {    /* USB configuration descriptor */
     9,          /* sizeof(usbDescriptorConfiguration): length of descriptor in bytes */
     USBDESCR_CONFIG,    /* descriptor type */
     18 + 7 * USB_CFG_HAVE_INTRIN_ENDPOINT + 7 * USB_CFG_HAVE_INTRIN_ENDPOINT3 +
@@ -239,7 +239,7 @@ char    i;
     }while(--i > 0);            /* loop control at the end is 2 bytes shorter than at beginning */
     usbCrc16Append(&txStatus->buffer[1], len);
     txStatus->len = len + 4;    /* len must be given including sync byte */
-    DBG2(0x21 + (((int)txStatus >> 3) & 3), txStatus->buffer, len + 3);
+    DBG2(0x30 + (((int)txStatus >> 3) & 3), txStatus->buffer, len + 3);
 }
 
 USB_PUBLIC void usbSetInterrupt(uchar *data, uchar len)
@@ -567,6 +567,7 @@ USB_PUBLIC void usbPoll(void)
 schar   len;
 uchar   i;
 
+    //DBG2(0xF0, 0, 0);
     len = usbRxLen - 3;
     if(len >= 0){
 /* We could check CRC16 here -- but ACK has already been sent anyway. If you
@@ -582,24 +583,28 @@ uchar   i;
 #else
         usbRxLen = 0;       /* mark rx buffer as available */
 #endif
+        //DBG2(0xF1, 0, 0);
     }
     if(usbTxLen & 0x10){    /* transmit system idle */
         if(usbMsgLen != USB_NO_MSG){    /* transmit data pending? */
             usbBuildTxBlock();
         }
+        //DBG2(0xF2, 0, 0);
     }
     for(i = 20; i > 0; i--){
         uchar usbLineStatus = USBIN & USBMASK;
         if(usbLineStatus != 0)  /* SE0 has ended */
             goto isNotReset;
     }
+    //DBG2(0xF3, 0, 0);
     /* RESET condition, called multiple times during reset */
     usbNewDeviceAddr = 0;
     usbDeviceAddr = 0;
     usbResetStall();
-    DBG1(0xff, 0, 0);
+    DBG1(0xFF, 0, 0);
 isNotReset:
     usbHandleResetHook(i);
+    //DBG2(0xF4, 0, 0);
 }
 
 /* ------------------------------------------------------------------------- */

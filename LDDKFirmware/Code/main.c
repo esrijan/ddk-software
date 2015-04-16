@@ -111,6 +111,15 @@ static void println2(char *str)
 #define printlnd(str)
 #endif
 
+static void jtag_disable(void)
+{
+    if (!(MCUCSR & (1 << JTD))) /* JTAG not soft-disabled */
+    {
+        MCUCSR |= (1 << JTD); /* Soft Disable JTAG */
+        MCUCSR |= (1 << JTD); /* Confirm to soft disable JTAG */
+    }
+}
+
 static void pre_load_mem_data(void)
 {
     uint8_t mem_buf[8];
@@ -260,11 +269,11 @@ usbMsgLen_t usbFunctionSetup(uchar data[8])
                 DDRC = (rq->wValue.bytes[0] & ~MASK_PORTC) | (DDRC & MASK_PORTC);
                 break;
             case REG_DIRD:
-				if ((rq->wValue.bytes[0] & ~MASK_PORTD) & 0b11) // PD0 & PD1 - are going to be used
-					usart_disable(); // Serial needs to be disabled
+                if ((rq->wValue.bytes[0] & ~MASK_PORTD) & 0b11) // PD0 & PD1 - are going to be used
+                    usart_disable(); // Serial needs to be disabled
                 DDRD = (rq->wValue.bytes[0] & ~MASK_PORTD) | (DDRD & MASK_PORTD);
-				if (!((rq->wValue.bytes[0] & ~MASK_PORTD) & 0b11)) // PD0 & PD1 - no longer being used
-					usart_enable(); // Serial can be re-enabled
+                if (!((rq->wValue.bytes[0] & ~MASK_PORTD) & 0b11)) // PD0 & PD1 - no longer being used
+                    usart_enable(); // Serial can be re-enabled
                 break;
             case REG_PORTA:
                 PORTA = (rq->wValue.bytes[0] & ~MASK_PORTA) | (PORTA & MASK_PORTA);
@@ -385,6 +394,7 @@ int main(void)
     clcd_init();
     println1("LDDK fw v" FW_VER);
 #endif
+    jtag_disable();
 
 #ifdef USE_WD
     /* Even if you don't use the watchdog, turn it off here. On newer devices,

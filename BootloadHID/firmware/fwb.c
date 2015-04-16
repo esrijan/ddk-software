@@ -17,35 +17,36 @@
 
 #include "fwb.h"
 
-int flash_write_block(uint8_t *block_addr, uint8_t *data)
-{
+#ifdef FWB
+
 #if (FLASHEND) > 0xFFFF /* we need long addressing */
-	unsigned long a = (unsigned long)(block_addr);
+int flash_write_block(uint32_t block_addr, uint8_t *data)
 #else
-	unsigned int a = (unsigned int)(block_addr);
+int flash_write_block(uint16_t block_addr, uint8_t *data)
 #endif
+{
 	int i;
 
-	if ((a & (BLOCK_SIZE - 1)) != 0) /* Not block size aligned */
+	if ((block_addr & (BLOCK_SIZE - 1)) != 0) /* Not block size aligned */
 		return -1;
 
-	if (a >= BL_ADDR) /* Allowing to write only in the application section */
+	if (block_addr >= BL_ADDR) /* Allowing to write only in the application section */
 		return -1;
 
 	cli(); // Disable interruptions
 
 	/* Erase the (flash) block */
-	boot_page_erase(a);
+	boot_page_erase(block_addr);
 	boot_spm_busy_wait(); /* Wait until page is erased */
 
 	/* Start filling the block's buffer word-wise */
 	for (i = 0; i < BLOCK_SIZE; i += 2)
 	{
-		boot_page_fill(a + i, *(uint16_t *)(data + i));
+		boot_page_fill(block_addr + i, *(uint16_t *)(data + i));
 	}
 
 	/* Write the block's buffer into the flash */
-	boot_page_write(a);
+	boot_page_write(block_addr);
 	boot_spm_busy_wait(); /* Wait until page is written */
 
 	boot_rww_enable(); /* Re-enable RWW-section again */
@@ -55,3 +56,5 @@ int flash_write_block(uint8_t *block_addr, uint8_t *data)
 
 	return 0;
 }
+
+#endif

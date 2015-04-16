@@ -38,12 +38,13 @@ read
 retval=\$?
 if [ \${retval} != 0 ]
 then
+	./bootloadHID --v2.1 -r ./usbdev.hex 2> /dev/null
+	retval=\$?
+fi
+if [ \${retval} != 0 ]
+then
 	./bootloadHID --v2 -r ./usbdev.hex
 	retval=\$?
-	if [ \${retval} = 0 ]
-	then
-		echo "WARNING: Complete I/O access may need bootloader upgrade"
-	fi
 fi
 cd ..
 rm -fr ${out_dir}

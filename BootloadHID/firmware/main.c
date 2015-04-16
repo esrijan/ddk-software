@@ -20,6 +20,7 @@ static void leaveBootloader() __attribute__((__noreturn__));
 
 #include "bootloaderconfig.h"
 #include "usbdrv.c"
+#include "oddebug.h"
 
 #include "fwb.h"
 
@@ -44,8 +45,7 @@ static uchar            offset;         /* data already processed in current tra
 static uchar            exitMainloop;
 #endif
 
-
-PROGMEM char usbHidReportDescriptor[33] = {
+const PROGMEM char usbHidReportDescriptor[33] = {
     0x06, 0x00, 0xff,              // USAGE_PAGE (Generic Desktop)
     0x09, 0x01,                    // USAGE (Vendor Usage 1)
     0xa1, 0x01,                    // COLLECTION (Application)
@@ -85,6 +85,8 @@ static void (*nullVector)(void) __attribute__((__noreturn__));
 
 static void leaveBootloader()
 {
+    uint8_t gicr;
+
     DBG1(0x01, 0, 0);
     cli();
     boot_rww_enable();
@@ -93,8 +95,9 @@ static void leaveBootloader()
 #if F_CPU == 12800000
     TCCR0 = 0;              /* default value */
 #endif
-    GICR = (1 << IVCE);     /* enable change of interrupt vectors */
-    GICR = (0 << IVSEL);    /* move interrupts to application flash section */
+    gicr = GICR;
+    GICR = gicr | (1 << IVCE);   /* enable change of interrupt vectors */
+    GICR = gicr & ~(1 << IVSEL); /* move interrupts to application flash section */
     bootLoaderShut();
 /* We must go through a global function pointer variable instead of writing
  *  ((void (*)(void))0)();
@@ -145,7 +148,7 @@ uchar   isLast;
 
     address.l = currentAddress;
     if(offset == 0){
-        DBG1(0x30, data, 3);
+        DBG2(0xB0, data, 3);
         address.c[0] = data[1];
         address.c[1] = data[2];
 #if (FLASHEND) > 0xffff /* we need long addressing */
@@ -155,20 +158,22 @@ uchar   isLast;
         data += 4;
         len -= 4;
     }
-    DBG1(0x31, (void *)&currentAddress, 4);
+    DBG2(0xB1, (void *)&currentAddress, 4);
     offset += len;
     isLast = offset & 0x80; /* != 0 if last block received */
     do{
+#ifndef TEST_MODE
         addr_t prevAddr;
+#endif
 #if SPM_PAGESIZE > 256
         uint pageAddr;
 #else
         uchar pageAddr;
 #endif
-        DBG1(0x32, 0, 0);
+        //DBG2(0xB2, 0, 0);
         pageAddr = address.s[0] & (SPM_PAGESIZE - 1);
         if(pageAddr == 0){              /* if page start: erase */
-            DBG1(0x33, 0, 0);
+            DBG2(0xB3, 0, 0);
 #ifndef TEST_MODE
             cli();
             boot_page_erase(address.l); /* erase page */
@@ -179,13 +184,15 @@ uchar   isLast;
         cli();
         boot_page_fill(address.l, *(short *)data);
         sei();
+#ifndef TEST_MODE
         prevAddr = address.l;
+#endif
         address.l += 2;
         data += 2;
         /* write page when we cross page boundary */
         pageAddr = address.s[0] & (SPM_PAGESIZE - 1);
         if(pageAddr == 0){
-            DBG1(0x34, 0, 0);
+            DBG2(0xB4, 0, 0);
 #ifndef TEST_MODE
             cli();
             boot_page_write(prevAddr);
@@ -196,7 +203,7 @@ uchar   isLast;
         len -= 2;
     }while(len);
     currentAddress = address.l;
-    DBG1(0x35, (void *)&currentAddress, 4);
+    DBG1(0xB5, (void *)&currentAddress, 4);
     return isLast;
 }
 
@@ -208,14 +215,20 @@ uchar   i = 0;
     TCCR0 = 3;          /* 1/64 prescaler */
 #endif
     usbInit();
+    //DBG2(0xA0, 0, 0);
     /* enforce USB re-enumerate: */
     usbDeviceDisconnect();  /* do this while interrupts are disabled */
+    //DBG2(0xA1, 0, 0);
     do{             /* fake USB disconnect for > 250 ms */
         wdt_reset();
         _delay_ms(1);
+    //DBG2(0xA2, 0, 0);
     }while(--i);
+    //DBG2(0xA3, 0, 0);
     usbDeviceConnect();
+    DBG1(0xA4, 0, 0);
     sei();
+    DBG1(0xA5, 0, 0);
 }
 
 int __attribute__((noreturn)) main(void)
@@ -229,18 +242,26 @@ int __attribute__((noreturn)) main(void)
      * Also, making sure that it actually doesn't do anything. And hence,
      * passing an unaligned address 0x0001, for the function to fail.
      */
-    flash_write_block((uint8_t *)(0x0001), NULL);
+#if (FLASHEND) > 0xFFFF
+    flash_write_block(0x00000001, NULL);
+#else
+    flash_write_block(0x0001, NULL);
+#endif
     odDebugInit();
     DBG1(0x00, 0, 0);
     /* jump to application if jumper is set */
     if(bootLoaderCondition()){
-        uchar i = 0, j = 0;
 #ifndef TEST_MODE
-        GICR = (1 << IVCE);  /* enable change of interrupt vectors */
-        GICR = (1 << IVSEL); /* move interrupts to boot flash section */
+        uint8_t gicr;
+
+        gicr = GICR;
+        GICR = gicr | (1 << IVCE);  /* enable change of interrupt vectors */
+        GICR = gicr | (1 << IVSEL); /* move interrupts to boot flash section */
 #endif
+        DBG1(0x02, 0, 0);
         initForUsbConnectivity();
         do{ /* main event loop */
+            //DBG2(0x03, 0, 0);
             wdt_reset();
             usbPoll();
 
@@ -249,17 +270,13 @@ int __attribute__((noreturn)) main(void)
             {
                 blink_cnt = 0;
                 toggleLED();
+                //DBG2(0x04, 0, 0);
             }
 
+            //DBG2(0x05, 0, 0);
 #if BOOTLOADER_CAN_EXIT
             if(exitMainloop){
-#if F_CPU == 12800000
-                break;  /* memory is tight at 12.8 MHz, save exit delay below */
-#endif
-                if(--i == 0){
-                    if(--j == 0)
-                        break;
-                }
+                break;
             }
 #endif
         }while(1);
